@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
 class DbUtils(object):
     """
-    A utilities class to create the Logbook mysql Db and corresponding tables.
+    A utilities class to insert/update data into tables.
     """
 
     def __init__(self):
@@ -16,17 +16,31 @@ class DbUtils(object):
                                 password='',database='geoindices')
         self.cursor = self.conn.cursor()
 
-    def create_dst_table(self):
-        import mysql.connector
-        # create the StockSymbols table
-        tabStr = """
-                    CREATE TABLE dst(
-                        date DATETIME NOT NULL,
-                        dst_index INT NOT NULL,
-                        PRIMARY KEY (date)
-                        )
-                    """
-        self.cursor.execute(tabStr)
+    def fill_dst_tab(self, dstTuple):
+        import datetime
+        # insert dst_index values into the dst table
+        # loop through the dst tuple and fill the values in database.
+        for currDst,currDate in zip(dstTuple[0],dstTuple[1]):
+            if not isinstance(currDst,float):
+                print "dst value shoule be float type-->", currDst
+                return
+            if not isinstance(currDate,datetime.datetime):
+                print "date value shoule be datetime type-->", currDate
+                return
+            try:
+                query = ("INSERT INTO dst "
+                       " (date, dst_index) "
+                       " VALUES (%s, %s) "
+                       " ON DUPLICATE KEY UPDATE "
+                       "   date=VALUES(date), "
+                       "   dst_index=VALUES(dst_index) "
+                       )
+                params = (
+                    currDate,
+                    currDst)
+                self.cursor.execute(query, params)
+            except:
+                print "--INSERT FAILED-->", date, dst_index
         self.conn.commit()
 
     def close(self):
