@@ -1,7 +1,7 @@
 if __name__ == "__main__":
     import dbUtils
     dbo = dbUtils.DbUtils()
-    dbo.create_dst_table()
+    dbo.fill_dst_tab(None)
     dbo.close()
 
 class DbUtils(object):
@@ -18,15 +18,19 @@ class DbUtils(object):
 
     def fill_dst_tab(self, dstTuple):
         import datetime
+        import math
         # insert dst_index values into the dst table
         # loop through the dst tuple and fill the values in database.
         for currDst,currDate in zip(dstTuple[0],dstTuple[1]):
             if not isinstance(currDst,float):
                 print "dst value shoule be float type-->", currDst
-                return
+                continue
             if not isinstance(currDate,datetime.datetime):
                 print "date value shoule be datetime type-->", currDate
-                return
+                continue
+            if math.isnan(currDst):
+                print "nan values, skipping!"
+                continue
             try:
                 query = ("INSERT INTO dst "
                        " (date, dst_index) "

@@ -1,10 +1,8 @@
 if __name__ == "__main__":
     import dstUtils
     dsU = dstUtils.DownloadDst()
-    print dsU.get_realtime_data()
-    print dsU.get_old_data( 2015, 6 )
-    # print dsU.get_old_data( 2014, 1 )
-    # print dsU.get_old_data( 2011, 10 )
+    # dsU.insert_dst_values_yearwise()
+    dsU.insert_real_time_values()
 
 class DownloadDst(object):
     """
@@ -16,6 +14,48 @@ class DownloadDst(object):
         self.realTime = "dst_realtime"
         self.provisional = "dst_provisional"
         self.final = "dst_final"
+
+    def insert_real_time_values(self):
+        import dbUtils
+        # create a db obj to insert values into db
+        dbo = dbUtils.DbUtils()
+        rtDstData = self.get_realtime_data()
+        if rtDstData is not None:
+            print "inserting RT values to db"
+            dbo.fill_dst_tab(rtDstData)
+        else:
+            print "data returned is None, check again!!!"
+        return
+
+    def insert_dst_values_yearwise(self, yearRange=[2000,2016]):
+        import pandas
+        import datetime
+        import dbUtils
+        # create a db obj to insert values into db
+        dbo = dbUtils.DbUtils()
+        # make sure the yearRange is appropriate
+        if not isinstance(yearRange,list):
+            print "need a 2-element list for year range-->", yearRange
+            return
+        if len(yearRange) != 2:
+            print "need a proper year range (2-elements)-->", yearRange
+            return
+        if (not isinstance(yearRange[0],int)) or\
+             (not isinstance(yearRange[1],int)):
+            print "need the elements of yearRange to be ints-->", yearRange
+            return
+        # create a list of dates with monthly freq
+        start_date = datetime.datetime(yearRange[0],1,1)
+        end_date = datetime.datetime(yearRange[1],12,31)
+        daterange = pandas.date_range(start_date, end_date, freq="M")
+        for dt in daterange:
+            print "working with year,month-->", dt.year, dt.month
+            currDstData = self.get_old_data( dt.year, dt.month )
+            if currDstData is not None:
+                print "inserting values to db"
+                dbo.fill_dst_tab(currDstData)
+            else:
+                print "data returned is None, check again!!!"
 
     def get_old_data(self, year, month):
         import urllib
