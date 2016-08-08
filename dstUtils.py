@@ -2,7 +2,7 @@ if __name__ == "__main__":
     import dstUtils
     dsU = dstUtils.DownloadDst()
     print dsU.get_realtime_data()
-    # print dsU.get_old_data( 2015, 6 )
+    print dsU.get_old_data( 2015, 6 )
     # print dsU.get_old_data( 2014, 1 )
     # print dsU.get_old_data( 2011, 10 )
 
