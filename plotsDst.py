@@ -2,10 +2,10 @@ if __name__ == "__main__":
     import readDst
     import plotsDst
     rdDst = readDst.ReadDstData()
-    dstCalDF = rdDst.read_for_dst_calendar()
+    # dstCalDF = rdDst.read_for_dst_calendar()
     plotObj = plotsDst.PlotDstData()
     # plotObj.line_plot(dstCalDF)
-    plotObj.calendar_plot(dstCalDF)
+    plotObj.calendar_plot()
 
 class PlotDstData(object):
     """
@@ -32,33 +32,14 @@ class PlotDstData(object):
         # show the results
         show(p)
 
-    def calendar_plot(self,dstCalDF):
-        from bokeh.layouts import row
-        from bokeh.plotting import figure, show, output_file
+    def calendar_plot(self):
+        from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+        import plotly.plotly as py
+        from plotly.graph_objs import Bar, Scatter, Figure, Layout
+        trace = Bar(x=[1,2,3],y=[4,5,6])
+        data = [trace]
+        layout = Layout(title='Test')
+        fig = Figure(data=data,layout=layout)
 
-        factors = ["a", "b", "c", "d", "e", "f", "g", "h"]
-        x =  [50, 40, 65, 10, 25, 37, 80, 60]
-
-        # dot = figure(title="Categorical Dot Plot", tools="", toolbar_location=None,
-        #             y_range=factors, x_range=[0,100])
-
-        # dot.segment(0, factors, x, factors, line_width=2, line_color="green", )
-        # dot.circle(x, factors, size=15, fill_color="orange", line_color="green", line_width=3, )
-
-        factors = ["foo", "bar", "baz"]
-        x = ["foo", "foo", "foo", "bar", "bar", "bar", "baz", "baz", "baz"]
-        y = ["foo", "bar", "baz", "foo", "bar", "baz", "foo", "bar", "baz"]
-        colors = [
-            "#0B486B", "#79BD9A", "#CFF09E",
-            "#79BD9A", "#0B486B", "#79BD9A",
-            "#CFF09E", "#79BD9A", "#0B486B"
-        ]
-
-        hm = figure(title="Categorical Heatmap", tools="hover", toolbar_location=None,
-            x_range=factors, y_range=factors)
-
-        hm.rect(x, y, color=colors, width=1, height=1)
-
-        output_file("categorical.html", title="categorical.py example")
-
-        show(row(hm))  # open a browser
+        # Save the figure as a png image:
+        py.image.save_as(fig, 'test.png')
