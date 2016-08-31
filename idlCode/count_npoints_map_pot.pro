@@ -19,7 +19,7 @@ nele_search=((fjul_search-sjul_search)/del_jul)+1 ;; Num of 2-min times to be se
 
 
 ;; write data to the file
-fname_count_north='/home/bharatr/Docs/data/data-points-north.txt' 
+fname_count_north='/home/bharatr/Docs/data/data-points-north-2.txt' 
 openw,1,fname_count_north
 
 for srch=0.d,double(nele_search-1) do begin
@@ -32,8 +32,8 @@ for srch=0.d,double(nele_search-1) do begin
 	;;Now read the gridded data from both hemispheres
 	;;Before that check if date is already loaded if so skip reading --> saves time
     rad_grd_check=rad_grd_check_loaded(datesel,1,/silent)
-    if (rad_grd_check eq 0) then $	
-		rad_grd_read,datesel,/north,/silent
+    ;if (rad_grd_check eq 0) then $	
+	rad_grd_read,datesel,/north,/silent
 
 	;;get time and count info
 	julData = (*rad_grd_data[0]).mjuls
@@ -50,7 +50,7 @@ endfor
 
 close, 1
 
-fname_count_south='/home/bharatr/Docs/data/data-points-south.txt' 
+fname_count_south='/home/bharatr/Docs/data/data-points-south-2.txt' 
 openw,1,fname_count_south
 
 for srch=0.d,double(nele_search-1) do begin
@@ -63,8 +63,8 @@ for srch=0.d,double(nele_search-1) do begin
 	;;Now read the gridded data from both hemispheres
 	;;Before that check if date is already loaded if so skip reading --> saves time
     rad_grd_check=rad_grd_check_loaded(datesel,1,/silent)
-    if (rad_grd_check eq 0) then $	
-		rad_grd_read,datesel,/south,/silent
+    ;if (rad_grd_check eq 0) then $	
+	rad_grd_read,datesel,/south,/silent
 
 	;;get time and count info
 	julData = (*rad_grd_data[1]).mjuls
