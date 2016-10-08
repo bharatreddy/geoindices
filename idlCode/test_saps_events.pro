@@ -112,7 +112,7 @@ for srchDay=0.d,double(ndays_search) do begin
 			saps_check_azim1 = vdata[3,*]
 			
 			for mltLoop = 0, n_elements(equ_oval_bnd_data_arr)-1 do begin
-				print, "n elemnts mlt search-->", n_elements(equ_oval_bnd_data_arr), equ_oval_bnd_data_arr[mltLoop,*], equ_oval_bnd_data_arr[mltLoop,0]
+				print, "n elemnts mlt search-->", n_elements(equ_oval_bnd_data_arr), size(equ_oval_bnd_data_arr), equ_oval_bnd_data_arr[mltLoop,*], equ_oval_bnd_data_arr[mltLoop,0]
 			endfor
 
 			saps_Lats_this_mlt = saps_check_lat1
