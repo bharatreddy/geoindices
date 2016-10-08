@@ -120,8 +120,12 @@ for srchDay=0.d,double(ndays_search) do begin
 		
 			POS_eq_eloval_bnd_this_mlt = equ_oval_bnd_data_arr
 			
-			print, "POES data--->", equ_oval_bnd_data_arr
-			print, "POES data MLT SEL--->", equ_oval_bnd_data_arr[0,*]
+			;print, "POES data--->", equ_oval_bnd_data_arr
+			;print, "POES data MLT SEL--->", equ_oval_bnd_data_arr[0,*] ;; [lat,mlt]
+
+			print "saps_Mlts_this_mlt---->", saps_Mlts_this_mlt
+			print "saps_Lats_this_mlt---->", saps_Lats_this_mlt
+			print "saps_Vels_this_mlt---->", saps_Vels_this_mlt
 		
 		
 
