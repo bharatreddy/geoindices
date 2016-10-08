@@ -33,7 +33,7 @@ for srchDay=0.d,double(ndays_search) do begin
 	;;;Calculate the current jul
 	juls_day=sjul_day+srchDay*del_jul
     sfjul,dateDay,timeDay,juls_day,/jul_to_date
-    print, "date and time sel--->"datesel, timesel
+    print, "date and time sel--->", datesel, timesel
 
     rad_map_read, dateDay
 	sfjul, dateDay, time_rng, sjjCurr, fjjCurr
@@ -120,7 +120,7 @@ for srchDay=0.d,double(ndays_search) do begin
 		
 			POS_eq_eloval_bnd_this_mlt = equ_oval_bnd_data_arr
 			
-			print "POES data--->", equ_oval_bnd_data_arr
+			print, "POES data--->", equ_oval_bnd_data_arr
 		
 		
 
