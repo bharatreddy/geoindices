@@ -113,25 +113,53 @@ for srchDay=0.d,double(ndays_search) do begin
 			
 			poesMLTLoopSize = size(equ_oval_bnd_data_arr)
 			for mltLoopPntr = 0, poesMLTLoopSize[1]-1 do begin
-				print, "n elemnts mlt search-->", equ_oval_bnd_data_arr[mltLoopPntr,*]
+
+				;; sometimes we get 0 in lats, skip those vals
+				if ( equ_oval_bnd_data_arr[mltLoopPntr,0] eq 0. ) then begin
+					continue
+				endif
+
+				;print, "n elemnts mlt search-->", equ_oval_bnd_data_arr[mltLoopPntr,*]
+				;; get the corresponding MLT from SD data
+
+				Jinds_curr_mlt_POES_SD = where( round(saps_check_mlt1) eq equ_oval_bnd_data_arr[mltLoopPntr,1] )
+
+				if (Jinds_curr_mlt_POES_SD[0] eq -1 ) then begin
+					print, "no mlt match found for saps and poes-->", equ_oval_bnd_data_arr[mltLoopPntr,*]
+					continue;
+				endif
+
+				saps_Lats_this_mlt = saps_check_lat1[Jinds_curr_mlt_POES_SD]
+				saps_Mlts_this_mlt = saps_check_mlt1[Jinds_curr_mlt_POES_SD]
+				saps_Vels_this_mlt = saps_check_vel1[Jinds_curr_mlt_POES_SD]
+				saps_Azims_this_mlt = saps_check_azim1[Jinds_curr_mlt_POES_SD]
+
+				POS_eq_eloval_bnd_this_mlt = equ_oval_bnd_data_arr[mltLoopPntr,*]
+
+				Jinds_Final_SAPS_scatter = where( ( saps_Azims_this_mlt gt saps_azim_range[0] and saps_Azims_this_mlt lt saps_azim_range[1] ) and $
+							( saps_Lats_this_mlt lt POS_eq_eloval_bnd_this_mlt[0] and saps_Lats_this_mlt lt 65. ) and $
+							( saps_Vels_this_mlt gt saps_vel_cutoff ) )
+			
+				;; Now calculate the stuff we need
+				if (Jinds_Final_SAPS_scatter[0] ne -1 ) then begin
+					Final_SAPS_Lats = saps_Lats_this_mlt[ Jinds_Final_SAPS_scatter ]
+					Final_SAPS_Mlts = saps_Mlts_this_mlt[ Jinds_Final_SAPS_scatter ]
+					Final_SAPS_Vels = saps_Vels_this_mlt[ Jinds_Final_SAPS_scatter ]
+					Final_EPR_lat = POS_eq_eloval_bnd_this_mlt[0]
+					
+					for fsp = 0, n_elements(Final_SAPS_Lats)-1 do begin
+						print, "SAPS --> lats, mlt, vel, eprlat", date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_EPR_lat
+						printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_EPR_lat, $
+	                                                                format = '(I8, I5, 2f9.4, f11.4, I5, f9.4)'
+					endfor
+					
+				endif else begin
+					;print, "no lat lon found 1"
+					continue
+				endelse
+
 			endfor
 
-			saps_Lats_this_mlt = saps_check_lat1
-			saps_Mlts_this_mlt = saps_check_mlt1
-			saps_Vels_this_mlt = saps_check_vel1
-			saps_Azims_this_mlt = saps_check_azim1
-			
-		
-			POS_eq_eloval_bnd_this_mlt = equ_oval_bnd_data_arr
-			
-			;print, "POES data--->", equ_oval_bnd_data_arr
-			;print, "POES data MLT SEL--->", equ_oval_bnd_data_arr[0,*] ;; [lat,mlt]
-
-			;print, "saps_Mlts_this_mlt---->", saps_Mlts_this_mlt
-			;print, "saps_Lats_this_mlt---->", saps_Lats_this_mlt
-			;print, "saps_Vels_this_mlt---->", saps_Vels_this_mlt
-		
-		
 
 	endfor
 	
