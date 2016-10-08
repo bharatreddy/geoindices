@@ -121,6 +121,7 @@ for srchDay=0.d,double(ndays_search) do begin
 			POS_eq_eloval_bnd_this_mlt = equ_oval_bnd_data_arr
 			
 			print, "POES data--->", equ_oval_bnd_data_arr
+			print, "POES data MLT SEL--->", equ_oval_bnd_data_arr[0,*]
 		
 		
 
