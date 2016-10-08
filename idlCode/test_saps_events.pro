@@ -111,6 +111,9 @@ for srchDay=0.d,double(ndays_search) do begin
 			saps_check_mlt1 = mlt_vdata[*]
 			saps_check_azim1 = vdata[3,*]
 			
+			for mltLoop = 0, n_elements(equ_oval_bnd_data_arr)-1 do begin
+				print, "n elemnts mlt search-->", n_elements(equ_oval_bnd_data_arr), equ_oval_bnd_data_arr[mltLoop,*], equ_oval_bnd_data_arr[mltLoop,0]
+			endfor
 
 			saps_Lats_this_mlt = saps_check_lat1
 			saps_Mlts_this_mlt = saps_check_mlt1
@@ -123,9 +126,9 @@ for srchDay=0.d,double(ndays_search) do begin
 			;print, "POES data--->", equ_oval_bnd_data_arr
 			;print, "POES data MLT SEL--->", equ_oval_bnd_data_arr[0,*] ;; [lat,mlt]
 
-			print, "saps_Mlts_this_mlt---->", saps_Mlts_this_mlt
-			print, "saps_Lats_this_mlt---->", saps_Lats_this_mlt
-			print, "saps_Vels_this_mlt---->", saps_Vels_this_mlt
+			;print, "saps_Mlts_this_mlt---->", saps_Mlts_this_mlt
+			;print, "saps_Lats_this_mlt---->", saps_Lats_this_mlt
+			;print, "saps_Vels_this_mlt---->", saps_Vels_this_mlt
 		
 		
 
