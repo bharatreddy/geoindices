@@ -33,7 +33,7 @@ for srchDay=0.d,double(ndays_search) do begin
 	;;;Calculate the current jul
 	juls_day=sjul_day+srchDay*del_jul
     sfjul,dateDay,timeDay,juls_day,/jul_to_date
-    print, "date and time sel--->", datesel, timesel
+    print, "date and time sel--->", dateDay,timeDay
 
     rad_map_read, dateDay
 	sfjul, dateDay, time_rng, sjjCurr, fjjCurr
