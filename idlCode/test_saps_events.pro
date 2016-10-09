@@ -95,11 +95,13 @@ for srchDay=0.d,double(ndays_search) do begin
 				mlt_vdata[mm] = mlt( evnt_year, timeymdhmstoyrsec( evnt_year, evnt_month, evnt_day, strt_hour, strt_min, strt_sec ), vdata[1,mm] )		
 			endfor
 
+			equ_oval_bnd_data_arr = aur_equ_bnd( date_curr, time_curr )
+
 			;; Get the equ. elec. prec bnd data
-			if ( ( abs(fitPOESjul -jul_curr) gt 30.d/1440.d) or srch eq 0 ) then begin
-				equ_oval_bnd_data_arr = aur_equ_bnd( date_curr, time_curr )
-				fitPOESjul = jul_curr
-			endif
+			;;if ( ( abs(fitPOESjul -jul_curr) gt 30.d/1440.d) or srch eq 0 ) then begin
+				;;equ_oval_bnd_data_arr = aur_equ_bnd( date_curr, time_curr )
+				;;fitPOESjul = jul_curr
+			;;endif
 
 			if ( equ_oval_bnd_data_arr[0,0] eq 0. ) then begin
 				print, "no data in poes!"
@@ -125,7 +127,7 @@ for srchDay=0.d,double(ndays_search) do begin
 				Jinds_curr_mlt_POES_SD = where( round(saps_check_mlt1) eq equ_oval_bnd_data_arr[mltLoopPntr,1] )
 
 				if (Jinds_curr_mlt_POES_SD[0] eq -1 ) then begin
-					print, "no mlt match found for saps and poes-->", equ_oval_bnd_data_arr[mltLoopPntr,*]
+					;print, "no mlt match found for saps and poes-->", equ_oval_bnd_data_arr[mltLoopPntr,*]
 					continue;
 				endif
 
