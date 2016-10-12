@@ -100,7 +100,10 @@ class DownloadDst(object):
                                     if len(missedCols) >= 1:
                                         for mcols in missedCols:
                                             dst_val.append( -1*float( mcols ) )
-                                            date_dst_arr.append ( date_dst_arr[-1] + dst_time_del )
+                                            # now since we added the date earlier we need to be
+                                            # careful about appending date values
+                                            if ( len(date_dst_arr) != len(dst_val) ):
+                                                date_dst_arr.append ( date_dst_arr[-1] + dst_time_del )
                                 except:
                                     print "something wrong with messed up vals!-->", columns[cols + 1]
                                     continue
