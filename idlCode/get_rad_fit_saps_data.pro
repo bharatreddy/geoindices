@@ -35,10 +35,8 @@ caldat, jul, mm, dd, year
 yrsec = (jul-julday(1,1,year,0,0,0))*86400.d
 
 ;; get scan info
-
-varr = rad_fit_get_scan(scan_number, groundflag=grnd, $
-	param=param, channel=channel, scan_id=scan_id, $
-	scan_startjul=jul)
+scan_number = rad_fit_find_scan(jul)
+varr = rad_fit_get_scan(scan_number, scan_startjul=jul)
 
 
 mlatArr = (*rad_fit_info[data_index]).mlat
