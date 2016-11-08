@@ -19,7 +19,7 @@ radCode = network[radInd].code[0]
 print, "radId, radCode--> ", radId, " ", radCode
 
 
-rad_fit_read, date, radId
+rad_fit_read, date, radCode
 
 ;; get index for current data
 data_index = rad_fit_get_data_index()
