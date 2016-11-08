@@ -1,5 +1,9 @@
 pro get_rad_fit_saps_data;;, date, time, radId
 
+
+common rad_data_blk
+common radarinfo
+
 date = 20120618
 time = 0245
 radId = 207
@@ -16,8 +20,6 @@ print, "radId, radCode--> ", radId, " ", radCode
 
 id = network[ind].id
 
-common rad_data_blk
-common radarinfo
 
 rad_fit_read, date, radId
 
@@ -58,3 +60,6 @@ for b=0, radar_beams-1 do begin
 		endif
 	endfor
 endfor
+
+
+end
