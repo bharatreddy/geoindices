@@ -14,11 +14,9 @@ if cc lt 1 then begin
 	rad_fit_set_data_index, data_index-1
 	return
 endif
-radCode = network[ind].code[0]
+radCode = network[radInd].code[0]
 
 print, "radId, radCode--> ", radId, " ", radCode
-
-id = network[ind].id
 
 
 rad_fit_read, date, radId
