@@ -1,7 +1,25 @@
-pro get_rad_fit_saps_data, date, time, radId
+pro get_rad_fit_saps_data;;, date, time, radId
+
+date = 20120618
+time = 0245
+radId = 207
+;; get the radar name from id
+radInd = where(network[*].id[0] eq radId, cc)
+if cc lt 1 then begin
+	print, ' Radar not in SuperDARN list: '+radar
+	rad_fit_set_data_index, data_index-1
+	return
+endif
+radCode = network[ind].code[0]
+
+print, "radId, radCode--> ", radId, " ", radCode
+
+id = network[ind].id
 
 common rad_data_blk
 common radarinfo
+
+rad_fit_read, date, radId
 
 ;; get index for current data
 data_index = rad_fit_get_data_index()
@@ -12,7 +30,7 @@ endif
 
 ;; get juls from date and time given
 sfjul, date, time, jul
-// get year and yearsec from jul
+;; get year and yearsec from jul
 caldat, jul, mm, dd, year
 yrsec = (jul-julday(1,1,year,0,0,0))*86400.d
 
@@ -36,7 +54,7 @@ radar_gates = sz[1]
 for b=0, radar_beams-1 do begin
 	for r=0, radar_gates-1 do begin
 		if varr[b,r] NE 10000 then begin
-			print "beam, gate, vel--->", b, "-->", r, "--->", varr[b,r]
+			print, "beam, gate, vel--->", b, "-->", r, "--->", varr[b,r]
 		endif
 	endfor
 endfor
