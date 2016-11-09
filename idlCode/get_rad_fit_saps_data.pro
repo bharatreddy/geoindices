@@ -58,14 +58,6 @@ mlatArr = (*rad_fit_info[data_index]).mlat
 mlonArr = (*rad_fit_info[data_index]).mlon
 mltArr = mlt(year, yrsec, mlonArr)
 
-print, "scan_beams--->", scan_beams
-print, "<--scan_beams--->"
-print, "mlonArr--->", mlonArr
-print, "mlatArr--->", mlatArr
-print, "varr--->", size(varr)
-print, "fov_loc_center-->", fov_loc_center
-print, "<--fov_loc_center-->"
-
 ;; get the data
 sz = size(varr, /dim)
 radar_beams = sz[0]
@@ -76,8 +68,9 @@ for b=0, radar_beams-1 do begin
 	for r=0, radar_gates-1 do begin
 		if varr[b,r] NE 10000 then begin
 			currLat = fov_loc_center[0,b,r]
-			currMLT = fov_loc_center[1,b,r]
-			print, "beam, gate, vel--->", b, "-->", r, "--->", varr[b,r], "lat, mlt-->", currLat, ", ", currMLT
+			currMlon = fov_loc_center[1,b,r]
+			currMLT = mlt(year, yrsec, fov_loc_center[1,b,r])
+			print, "beam, gate, vel--->", b, "-->", r, "--->", varr[b,r], "lat, mlon, mlt-->", currLat, ", ", currMlon, ", ", currMLT
 		endif
 	endfor
 endfor
