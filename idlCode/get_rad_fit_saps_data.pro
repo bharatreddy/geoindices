@@ -59,6 +59,9 @@ mltArr = mlt(year, yrsec, mlonArr)
 
 print, "scan_beams--->", scan_beams
 print, "<--scan_beams--->"
+print, "mlonArr--->", size(mlonArr)
+print, "mlatArr--->", size(mlatArr)
+print, "varr--->", size(varr)
 print, "fov_loc_center-->", fov_loc_center
 print, "<--fov_loc_center-->"
 
