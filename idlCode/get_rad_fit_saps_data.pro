@@ -7,6 +7,9 @@ common radarinfo
 date = 20120618
 time = 0245
 radId = 207
+coords = "mlt"
+
+
 ;; get the radar name from id
 radInd = where(network[*].id[0] eq radId, cc)
 if cc lt 1 then begin
@@ -42,11 +45,11 @@ print, "(*rad_fit_data[data_index]).scan_id", (*rad_fit_data[data_index]).scan_i
 
 ;; get mlat, mlon info from fovs
 scan_beams = WHERE((*rad_fit_data[data_index]).beam_scan EQ scan_number and $
-			(*rad_fit_data[data_index]).scan_id eq scan_id, $
+			(*rad_fit_data[data_index]).channel eq (*rad_fit_info[data_index]).channels[0], $
 			no_scan_beams)
 
 rad_define_beams, (*rad_fit_info[data_index]).id, (*rad_fit_info[data_index]).nbeams, $
-		(*rad_fit_info[data_index]).ngates, year, yrsec, coords="mlt", $
+		(*rad_fit_info[data_index]).ngates, year, yrsec, coords=coords, $
 		lagfr0=(*rad_fit_data[data_index]).lagfr[scan_beams[0]], $
 		smsep0=(*rad_fit_data[data_index]).smsep[scan_beams[0]], $
 		fov_loc_full=fov_loc_full, fov_loc_center=fov_loc_center
@@ -65,7 +68,9 @@ radar_gates = sz[1]
 for b=0, radar_beams-1 do begin
 	for r=0, radar_gates-1 do begin
 		if varr[b,r] NE 10000 then begin
-			print, "beam, gate, vel--->", b, "-->", r, "--->", varr[b,r]
+			currLat = fov_loc_center[0,b,r]
+			currMLT = fov_loc_center[1,b,r]
+			print, "beam, gate, vel--->", b, "-->", r, "--->", varr[b,r], "lat, mlt-->", currLat, ", ", currMLT
 		endif
 	endfor
 endfor
