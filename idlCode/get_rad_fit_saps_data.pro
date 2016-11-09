@@ -7,7 +7,7 @@ common radarinfo
 date = 20120618
 time = 0245
 radId = 207
-coords = "mlt"
+coords = "magn"
 
 
 ;; get the radar name from id
@@ -59,7 +59,7 @@ mltArr = mlt(year, yrsec, mlonArr)
 
 print, "scan_beams--->", scan_beams
 print, "<--scan_beams--->"
-print, "fov_loc_center-->", fov_loc_center2
+print, "fov_loc_center-->", fov_loc_center
 print, "<--fov_loc_center-->"
 
 ;; get the data
@@ -71,8 +71,8 @@ radar_gates = sz[1]
 for b=0, radar_beams-1 do begin
 	for r=0, radar_gates-1 do begin
 		if varr[b,r] NE 10000 then begin
-			currLat = fov_loc_center2[0,b,r]
-			currMLT = fov_loc_center2[1,b,r]
+			currLat = fov_loc_center[0,b,r]
+			currMLT = fov_loc_center[1,b,r]
 			print, "beam, gate, vel--->", b, "-->", r, "--->", varr[b,r], "lat, mlt-->", currLat, ", ", currMLT
 		endif
 	endfor
