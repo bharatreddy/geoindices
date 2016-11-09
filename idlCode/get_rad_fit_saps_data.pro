@@ -1,8 +1,9 @@
 pro get_rad_fit_saps_data;;, date, time, radId
 
 
-common rad_data_blk
 common radarinfo
+common rad_data_blk
+
 
 date = 20120618
 time = 0245
@@ -50,7 +51,7 @@ rad_define_beams, (*rad_fit_info[data_index]).id, (*rad_fit_info[data_index]).nb
 		(*rad_fit_info[data_index]).ngates, year, yrsec, coords=coords, $
 		lagfr0=(*rad_fit_data[data_index]).lagfr[scan_beams[0]], $
 		smsep0=(*rad_fit_data[data_index]).smsep[scan_beams[0]], $
-		fov_loc_full=fov_loc_full2, fov_loc_center=fov_loc_center2
+		fov_loc_full=fov_loc_full, fov_loc_center=fov_loc_center
 
 
 mlatArr = (*rad_fit_info[data_index]).mlat
@@ -59,8 +60,8 @@ mltArr = mlt(year, yrsec, mlonArr)
 
 print, "scan_beams--->", scan_beams
 print, "<--scan_beams--->"
-print, "mlonArr--->", size(mlonArr)
-print, "mlatArr--->", size(mlatArr)
+print, "mlonArr--->", mlonArr
+print, "mlatArr--->", mlatArr
 print, "varr--->", size(varr)
 print, "fov_loc_center-->", fov_loc_center
 print, "<--fov_loc_center-->"
