@@ -51,7 +51,7 @@ rad_define_beams, (*rad_fit_info[data_index]).id, (*rad_fit_info[data_index]).nb
 		lagfr0=(*rad_fit_data[data_index]).lagfr[scan_beams[0]], $
 		smsep0=(*rad_fit_data[data_index]).smsep[scan_beams[0]], $
 		fov_loc_full=fov_loc_full, fov_loc_center=fov_loc_center
-
+print, "scan_beams--->", scan_beams
 print, "fov_loc_center-->", fov_loc_center
 print, "<--fov_loc_center-->"
 mlatArr = (*rad_fit_info[data_index]).mlat
