@@ -38,6 +38,19 @@ yrsec = (jul-julday(1,1,year,0,0,0))*86400.d
 scan_number = rad_fit_find_scan(jul)
 varr = rad_fit_get_scan(scan_number, scan_startjul=jul)
 
+print, "(*rad_fit_data[data_index]).scan_id", (*rad_fit_data[data_index]).scan_id, (*rad_fit_data[data_index]).channel
+
+;; get mlat, mlon info from fovs
+scan_beams = WHERE((*rad_fit_data[data_index]).beam_scan EQ scan_number and $
+			(*rad_fit_data[data_index]).scan_id eq scan_id, $
+			no_scan_beams)
+
+rad_define_beams, (*rad_fit_info[data_index]).id, (*rad_fit_info[data_index]).nbeams, $
+		(*rad_fit_info[data_index]).ngates, year, yrsec, coords="mlt", $
+		lagfr0=(*rad_fit_data[data_index]).lagfr[scan_beams[0]], $
+		smsep0=(*rad_fit_data[data_index]).smsep[scan_beams[0]], $
+		fov_loc_full=fov_loc_full, fov_loc_center=fov_loc_center
+
 
 mlatArr = (*rad_fit_info[data_index]).mlat
 mlonArr = (*rad_fit_info[data_index]).mlon
