@@ -5,7 +5,7 @@ common radarinfo
 common rad_data_blk
 
 
-fname_event='../geoindices/data/sapsVelDates.txt' 
+fname_event='../data/sapsVelDates.txt' 
 
 nel_arr_all = 2000
 dateArr = fltarr(nel_arr_all)
@@ -141,9 +141,7 @@ for dtRdCnt=0.d,double(rcnt-1) do begin
 				endfor
 			endfor
 
-	endfor
-
-	
+	endfor	
 
 endfor
 
