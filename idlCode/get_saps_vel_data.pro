@@ -134,8 +134,8 @@ for dtRdCnt=0.d,double(rcnt-1) do begin
 						currMLat = fov_loc_center[0,b,r]
 						currMlon = fov_loc_center[1,b,r]
 						currMLT = mlt(year, yrsec, fov_loc_center[1,b,r])
-						printf,1, datesel,timesel, b, r, varr[b,r], currMLat, currMlon, currMLT, $
-	                                                                format = '(I8, I5, 2I4, f11.4, 3f9.4)'
+						printf,1, datesel,timesel, b, r, varr[b,r], currMLat, currMlon, currMLT, radId, radCode, $
+	                                                                format = '(I8, I5, 2I4, f11.4, 3f9.4, I5, A5)'
 
 					endif
 				endfor
