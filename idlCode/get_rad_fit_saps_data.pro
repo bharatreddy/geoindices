@@ -4,9 +4,11 @@ pro get_rad_fit_saps_data;;, date, time, radId
 common radarinfo
 common rad_data_blk
 
+fname_saps_vel = '../geoindices/data/saps-vels-north.txt' 
+openw,1,fname_saps_vel
 
 date = 20120618
-time = 0245
+timeRange = [130, 430]
 radId = 207
 coords = "magn"
 
@@ -23,57 +25,79 @@ radCode = network[radInd].code[0]
 print, "radId, radCode--> ", radId, " ", radCode
 
 
-rad_fit_read, date, radCode
-
-;; get index for current data
-data_index = rad_fit_get_data_index()
-if data_index eq -1 then begin
-	print, "data index is -1!!!"
-	return
-endif
-
-;; get juls from date and time given
-sfjul, date, time, jul
-;; get year and yearsec from jul
-caldat, jul, mm, dd, year
-yrsec = (jul-julday(1,1,year,0,0,0))*86400.d
-
-;; get scan info
-scan_number = rad_fit_find_scan(jul)
-varr = rad_fit_get_scan(scan_number, scan_startjul=jul)
-
-;; get mlat, mlon info from fovs
-scan_beams = WHERE((*rad_fit_data[data_index]).beam_scan EQ scan_number and $
-			(*rad_fit_data[data_index]).channel eq (*rad_fit_info[data_index]).channels[0], $
-			no_scan_beams)
-
-rad_define_beams, (*rad_fit_info[data_index]).id, (*rad_fit_info[data_index]).nbeams, $
-		(*rad_fit_info[data_index]).ngates, year, yrsec, coords=coords, $
-		lagfr0=(*rad_fit_data[data_index]).lagfr[scan_beams[0]], $
-		smsep0=(*rad_fit_data[data_index]).smsep[scan_beams[0]], $
-		fov_loc_full=fov_loc_full, fov_loc_center=fov_loc_center
+rad_fit_read, date, radCode, time=timeRange
 
 
-mlatArr = (*rad_fit_info[data_index]).mlat
-mlonArr = (*rad_fit_info[data_index]).mlon
-mltArr = mlt(year, yrsec, mlonArr)
+sfjul,date,timeRange,sjul_search,fjul_search
 
-;; get the data
-sz = size(varr, /dim)
-radar_beams = sz[0]
-radar_gates = sz[1]
+dt_skip_time=2.d ;;; we search data the grd file every 2 min
+del_jul=dt_skip_time/1440.d ;;; This is the time step used to read the data --> Selected to be 60 min
 
-; loop through and extract
-for b=0, radar_beams-1 do begin
-	for r=0, radar_gates-1 do begin
-		if varr[b,r] NE 10000 then begin
-			currLat = fov_loc_center[0,b,r]
-			currMlon = fov_loc_center[1,b,r]
-			currMLT = mlt(year, yrsec, fov_loc_center[1,b,r])
-			print, "beam, gate, vel--->", b, "-->", r, "--->", varr[b,r], "lat, mlon, mlt-->", currLat, ", ", currMlon, ", ", currMLT
+nele_search=((fjul_search-sjul_search)/del_jul)+1 ;; Num of 2-min times to be searched..
+
+
+for srch=0.d,double(nele_search-1) do begin
+
+        ;;;Calculate the current jul
+        juls_curr=sjul_search+srch*del_jul
+    	sfjul,datesel,timesel,juls_curr,/jul_to_date
+    	print, "currently working with-->", datesel,timesel, radCode
+
+    	;; get index for current data
+		data_index = rad_fit_get_data_index()
+		if data_index eq -1 then begin
+			print, "data index is -1!!!"
+			return
 		endif
-	endfor
+
+		;; get year and yearsec from juls_curr
+		caldat, juls_curr, mm, dd, year
+		yrsec = (juls_curr-julday(1,1,year,0,0,0))*86400.d
+
+		;; get scan info
+		scan_number = rad_fit_find_scan(juls_curr)
+		varr = rad_fit_get_scan(scan_number, scan_startjul=juls_curr)
+
+
+		;; get mlat, mlon info from fovs
+		scan_beams = WHERE((*rad_fit_data[data_index]).beam_scan EQ scan_number and $
+					(*rad_fit_data[data_index]).channel eq (*rad_fit_info[data_index]).channels[0], $
+					no_scan_beams)
+
+		rad_define_beams, (*rad_fit_info[data_index]).id, (*rad_fit_info[data_index]).nbeams, $
+				(*rad_fit_info[data_index]).ngates, year, yrsec, coords=coords, $
+				lagfr0=(*rad_fit_data[data_index]).lagfr[scan_beams[0]], $
+				smsep0=(*rad_fit_data[data_index]).smsep[scan_beams[0]], $
+				fov_loc_full=fov_loc_full, fov_loc_center=fov_loc_center
+
+
+		mlatArr = (*rad_fit_info[data_index]).mlat
+		mlonArr = (*rad_fit_info[data_index]).mlon
+		mltArr = mlt(year, yrsec, mlonArr)
+
+
+		;; get the data
+		sz = size(varr, /dim)
+		radar_beams = sz[0]
+		radar_gates = sz[1]
+
+
+		; loop through and extract
+		for b=0, radar_beams-1 do begin
+			for r=0, radar_gates-1 do begin
+				if varr[b,r] NE 10000 then begin
+					currMLat = fov_loc_center[0,b,r]
+					currMlon = fov_loc_center[1,b,r]
+					currMLT = mlt(year, yrsec, fov_loc_center[1,b,r])
+					printf,1, datesel,timesel, b, r, varr[b,r], currMLat, currMlon, currMLT, $
+                                                                format = '(I8, I5, 2I4, f11.4, 3f9.4)'
+
+				endif
+			endfor
+		endfor
+
 endfor
 
+close,1
 
 end
