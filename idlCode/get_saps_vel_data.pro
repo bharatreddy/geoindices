@@ -45,7 +45,7 @@ maxTimeArr = maxTimeArr[0:rcnt-1]
 coords = "magn"
 
 
-fname_saps_vel = '../geoindices/data/saps-vels-north.txt' 
+fname_saps_vel = '../data/saps-vels-north.txt' 
 openw,1,fname_saps_vel
 
 for dtRdCnt=0.d,double(rcnt-1) do begin
