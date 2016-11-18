@@ -81,7 +81,7 @@ time = 0400
 coords = 'mlt'
 xrangePlot = [-44, 44]
 yrangePlot = [-44,20]
-probScale = [0,100.]
+probScale = [0,1.]
 selSymThick = 0.5
 selSymSize = 0.5
 load_usersym, /circle
@@ -101,7 +101,7 @@ for k = 0,n_elements(currLatSel) -1 do begin
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k]*100.,scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -120,7 +120,7 @@ for k = 0,n_elements(currLatSel) -1 do begin
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k]*100.,scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -140,7 +140,7 @@ for k = 0,n_elements(currLatSel) -1 do begin
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k]*100.,scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -160,7 +160,7 @@ for k = 0,n_elements(currLatSel) -1 do begin
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k]*100.,scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -180,7 +180,7 @@ for k = 0,n_elements(currLatSel) -1 do begin
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k]*100.,scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -188,7 +188,7 @@ endfor
 
 
 
-plot_colorbar, 1., 1., 0., 0.,scale=probScale,legend='Prob of SAPS',param='power'
+plot_colorbar, 1., 1., 0., 0.,scale=probScale,legend='Prob of SAPS', level_format='(f6.2)',param='power',/keep_first_last_label
 
 ps_close, /no_filename
 
