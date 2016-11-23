@@ -5,12 +5,12 @@ common rad_data_blk
 rad_load_colortable,/leicester
 
 ;; events selected
-dateSel = [ 20130214 ]
-timeSel = [ 0500 ]
-dstIndex = [ -30. ]
+dateSel = [ 20130317 ]
+timeSel = [ 2000 ]
+dstIndex = [ -116. ]
 ;; set plot/map parameters
 xrangePlot = [-44, 44]
-yrangePlot = [-44,20]
+yrangePlot = [-44,30]
 velScale = [0,1000]
 probScale = [0.,1.]
 cntrMinVal = 0.2
@@ -41,68 +41,76 @@ latArr = fltarr(22, 362)
 probArr = fltarr(22, 362)
 countLat = 0.
 for lat = 50., 70. do begin
-	countLat += 1.
-	countLon = 0.
-	for currMlon = 0., 360. do begin
-		countLon += 1
-		latArr[countLat,countLon] = lat
-		mlonArr[countLat,countLon] = currMlon
+    countLat += 1.
+    countLon = 0.
+    for currMlon = 0., 360. do begin
+        countLon += 1
+        latArr[countLat,countLon] = lat
+        mlonArr[countLat,countLon] = currMlon
 
-		
-		
+        
+        
 
-		;; calculate juls from date and time
-		sfjul, dateSel[0], timeSel[0], jul_curr
-		caldat,jul_curr, evnt_month, evnt_day, evnt_year, strt_hour, strt_min, strt_sec
-		currMlt = mlt( dateSel[0], timeymdhmstoyrsec( evnt_year, evnt_month, evnt_day, strt_hour, strt_min, strt_sec ), currMlon )
-		mltArr[countLat,countLon] = currMlt
+        ;; calculate juls from date and time
+        sfjul, dateSel[0], timeSel[0], jul_curr
+        caldat,jul_curr, evnt_month, evnt_day, evnt_year, strt_hour, strt_min, strt_sec
+        currMlt = mlt( dateSel[0], timeymdhmstoyrsec( evnt_year, evnt_month, evnt_day, strt_hour, strt_min, strt_sec ), currMlon )
+        mltArr[countLat,countLon] = currMlt
 
-		stereoCoords = calc_stereo_coords( lat, currMlt,/ mlt )
-		strLatArr[countLat,countLon] = stereoCoords[0]
-		strMltArr[countLat,countLon] = stereoCoords[1]
-
-		
-		;; setup stuff for model
-		dst = dstIndex[0]
-		sigma_x = a_sx + b_sx * dst
-		sigma_y = a_sy + b_sy * dst
-		xo = a_xo + b_xo * dst
-		yo = a_yo + b_yo * dst
-		amplitude = a_o + b_o * dst
-		;; we use normalized latitudes and logitudes for the model
-		normLat = lat - 57.5
-		if ( currMlt ge 12. ) then begin
-			normMlt = currMlt - 24.
-		endif else begin
-			normMlt = currMlt
-		endelse
+        stereoCoords = calc_stereo_coords( lat, currMlt,/ mlt )
+        strLatArr[countLat,countLon] = stereoCoords[0]
+        strMltArr[countLat,countLon] = stereoCoords[1]
 
 
+        ;; setup stuff for model
+        dst = dstIndex[0]
+        sigma_x = a_sx + b_sx * dst
+        sigma_y = a_sy + b_sy * dst
+        xo = a_xo + b_xo * dst
+        yo = a_yo + b_yo * dst
+        amplitude = a_o + b_o * dst
+        ;; we use normalized latitudes and logitudes for the model
+        normLat = lat - 57.5
+        if ( currMlt ge 12. ) then begin
+            normMlt = currMlt - 24.
+        endif else begin
+            normMlt = currMlt
+        endelse
 
-		a = (cos(theta)^2)/(2*sigma_x^2) + (sin(theta)^2)/(2*sigma_y^2)
-		b = -(sin(2*theta))/(4*sigma_x^2) + (sin(2*theta))/(4*sigma_y^2)
-		c = (sin(theta)^2)/(2*sigma_x^2) + (cos(theta)^2)/(2*sigma_y^2)
-		currProb = amplitude*exp( - (a*((normLat-xo)^2) + 2*b*(normLat-xo)*(normMlt-yo) + $
+
+
+        a = (cos(theta)^2)/(2*sigma_x^2) + (sin(theta)^2)/(2*sigma_y^2)
+        b = -(sin(2*theta))/(4*sigma_x^2) + (sin(2*theta))/(4*sigma_y^2)
+        c = (sin(theta)^2)/(2*sigma_x^2) + (cos(theta)^2)/(2*sigma_y^2)
+        currProb = amplitude*exp( - (a*((normLat-xo)^2) + 2*b*(normLat-xo)*(normMlt-yo) + $
                         c*((normMlt-yo)^2)))
         
         probArr[countLat,countLon] = currProb
-	endfor
+    endfor
 endfor
 
 
 ps_open, '/home/bharatr/Docs/plots/saps-model-test.ps'
 
 map_plot_panel,date=dateSel[0],time=timeSel[0],coords=coords,/no_fill,xrange=xrangePlot, $
-		yrange=yrangePlot,/no_coast,pos=define_panel(1,1,0,0,/bar),/isotropic,grid_charsize='0.5',/north, $
-		title = string(dateSel[0]) + "-" + strtrim( string(timeSel[0]), 2), charsize = 0.5
+        yrange=yrangePlot,/no_coast,pos=define_panel(1,1,0,0,/bar),/isotropic,grid_charsize='0.5',/north, $
+        title = string(dateSel[0]) + "-" + strtrim( string(timeSel[0]), 2), charsize = 0.5
+
+;; overlay dmsp
+rad_map_overlay_dmsp, dateSel[0], timeSel[0], coords = coords, $
+                    hemisphere = hemisphere,/ssj, /ssies
+dmsp_ssj_fit_eqbnd, dateSel[0], timeSel[0], coords = coords              
+
 ;; plot map potential vectors
 rad_map_read, dateSel[0]
 rad_map_overlay_vectors, date = dateSel[0], time=timeSel[0], coords = coords, $
-				radar_ids = [ 209, 208, 33, 207, 206, 205, 204, 32 ], /no_fov_names, /no_show_Nvc
+                 /no_fov_names, /no_show_Nvc
+
+;;radar_ids = [ 209, 208, 33, 207, 206, 205, 204, 32 ],              
 ;; plot the prob contour
 contour, probArr, strLatArr, strMltArr, $
-		/overplot, xstyle=4, ystyle=4, noclip=0, thick = 2., $
-		levels=cntrMinVal+(probScale[1]-cntrMinVal)*findgen(n_levels+1.)/float(n_levels), /follow
+        /overplot, xstyle=4, ystyle=4, noclip=0, thick = 2., $
+        levels=cntrMinVal+(probScale[1]-cntrMinVal)*findgen(n_levels+1.)/float(n_levels), /follow
 
 ps_close, /no_filename
 
