@@ -114,9 +114,9 @@ julsArrEle = dblarr(nel_arr_all)
 nv=0
 OPENR, 1, fNamePoesEle
 WHILE not eof(1) do begin
-    READF,1,timestamp, date, aacgm_lat_foot, aacgm_lon_foot, MLT, log_ele_flux, sat, dateStr, timeCurr
+    READF,1, aacgm_lat_foot, aacgm_lon_foot, MLT, log_ele_flux, sat, dateStr, timeCurr
 
-    print,timestamp, date, aacgm_lat_foot, aacgm_lon_foot, MLT, log_ele_flux, sat, dateStr, timeCurr
+    print,aacgm_lat_foot, aacgm_lon_foot, MLT, log_ele_flux, sat, dateStr, timeCurr
 
 
     mlatArrEle[nv] = aacgm_lat_foot
@@ -153,7 +153,7 @@ julsArrEle = julsArrEle[0:nv-1]
 
 ;; get the time range chosen
 sfjul, dateSel[0], timeSel[0], jul_time_sel
-jul_range_poes = [jul_poes - 45./1440.d, jul_poes + 45./1440.d] 
+jul_range_poes = [jul_time_sel - 45./1440.d, jul_time_sel + 45./1440.d] 
 sfjul, date_range_poes, time_range_poes, jul_range_poes, /jul_to_date
 print, "POES times selected-->", date_range_poes, time_range_poes
 

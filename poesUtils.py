@@ -145,7 +145,7 @@ class PoesData(object):
             poesDF['log_pro_flux'] = [0. if x <= 0. else round( numpy.log10(x), 2 )\
                          for x in poesDF['ted_pro_total_flux']]
             # the current satellite number
-            poesDF["sat"] = f[-20:-17]
+            poesDF["sat"] = f[-19:-17]
             # seperate out electron and proton flux and discard all zeros
             currPoesEleFluxDF = poesDF[poesDF["log_ele_flux"] > 0.][ ["timestamp",\
                              "date", "aacgm_lat_foot", "aacgm_lon_foot", "MLT",\
