@@ -13,6 +13,7 @@ xrangePlot = [-44, 44]
 yrangePlot = [-44,30]
 velScale = [0,1000]
 probScale = [0.,1.]
+
 cntrMinVal = 0.2
 n_levels = 5
 coords = "mlt"
@@ -158,11 +159,16 @@ print, "POES times selected-->", date_range_poes, time_range_poes
 
 
 
-jindsTimeSel = where( julsArrEle ge jul_range_poes[0] and julsArrEle le jul_range_poes[1] )
+jindsTimeSel = where( (julsArrEle ge jul_range_poes[0]) and (julsArrEle le jul_range_poes[1]) and ( mlatArrEle ge 50. ) )
 
-julsSelEle
+julsSelTimes = julsArrEle[ jindsTimeSel ]
+mlatSelTimes = mlatArrEle[ jindsTimeSel ]
+mlonSelTimes = mlonArrEle[ jindsTimeSel ]
+mltSelTimes = mltArrEle[ jindsTimeSel ]
+logEleFluxSelTimes = logEleFluxArrEle[ jindsTimeSel ]
+satSelTimes = satArrEle[ jindsTimeSel ]
 
-
+poesScale = [ min(logEleFluxSelTimes), max(logEleFluxSelTimes) ]
 
 
 
@@ -191,9 +197,24 @@ rad_map_overlay_vectors, date = dateSel[0], time=timeSel[0], coords = coords, $
 
 ;;radar_ids = [ 209, 208, 33, 207, 206, 205, 204, 32 ],              
 ;; plot the prob contour
-contour, probArr, strLatArr, strMltArr, $
-        /overplot, xstyle=4, ystyle=4, noclip=0, thick = 2., $
-        levels=cntrMinVal+(probScale[1]-cntrMinVal)*findgen(n_levels+1.)/float(n_levels), /follow
+;;contour, probArr, strLatArr, strMltArr, $
+;;        /overplot, xstyle=4, ystyle=4, noclip=0, thick = 2., $
+;;        levels=cntrMinVal+(probScale[1]-cntrMinVal)*findgen(n_levels+1.)/float(n_levels), /follow
+
+
+for k = 0,n_elements(mlatSelTimes) -1 do begin
+    
+    ;;if ( currProbSel[k] lt .2 ) then continue
+
+    stereCr_low = calc_stereo_coords( mlatSelTimes[k], mltSelTimes[k], /mlt )
+
+    colValCurr = get_color_index(logEleFluxSelTimes[k],scale=poesScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+    
+    oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
+    
+endfor
+
+
 
 ps_close, /no_filename
 

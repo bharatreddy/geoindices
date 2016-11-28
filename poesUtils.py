@@ -10,8 +10,8 @@ if __name__ == "__main__":
                 '/home/bharat/Desktop/poesTest/poes_m02_20150617_proc.nc', 
                 '/home/bharat/Desktop/poesTest/poes_n15_20150617_proc.nc']
     poesObj.read_poes_data_files(testFiles, \
-                     eleFluxFile="/home/bharat/Desktop/poesTest/eleflux.csv",\
-                     proFluxFile="/home/bharat/Desktop/poesTest/proflux.csv")
+                     eleFluxFile="/home/bharat/Desktop/poesTest/eleflux.txt",\
+                     proFluxFile="/home/bharat/Desktop/poesTest/proflux.txt")
 
 class PoesData(object):
     """
