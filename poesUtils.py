@@ -115,8 +115,14 @@ class PoesData(object):
             poesDF['date'] = pandas.to_datetime(poesDF['timestamp'], unit='ms')
             poesDF["alt"] = poesRawData.variables['alt'][:]
             poesDF["aacgm_lat_foot"] = poesRawData.variables['aacgm_lat_foot'][:]
+
             poesDF["aacgm_lon_foot"] = poesRawData.variables['aacgm_lon_foot'][:]
             poesDF["MLT"] = poesRawData.variables['MLT'][:]
+            # round of to 2 decimals
+            poesDF['alt'] = [ round( x, 2 ) for x in poesDF['alt']]
+            poesDF['aacgm_lat_foot'] = [ round( x, 2 ) for x in poesDF['aacgm_lat_foot']]
+            poesDF['aacgm_lon_foot'] = [ round( x, 2 ) for x in poesDF['aacgm_lon_foot']]
+            poesDF['MLT'] = [ round( x, 2 ) for x in poesDF['MLT']]
             # Add up the fluxes
             poesDF["ted_ele_total_flux"] = poesRawData.variables['ted_ele_tel0_flux_4'][:] +\
                     poesRawData.variables['ted_ele_tel0_flux_8'][:] + \
@@ -134,9 +140,9 @@ class PoesData(object):
                     poesRawData.variables['ted_pro_tel30_flux_8'][:] + \
                     poesRawData.variables['ted_pro_tel30_flux_11'][:] + \
                     poesRawData.variables['ted_pro_tel30_flux_14'][:]
-            poesDF['log_ele_flux'] = [0. if x <= 0. else numpy.log10(x)\
+            poesDF['log_ele_flux'] = [0. if x <= 0. else round( numpy.log10(x), 2 )\
                          for x in poesDF['ted_ele_total_flux']]
-            poesDF['log_pro_flux'] = [0. if x <= 0. else numpy.log10(x)\
+            poesDF['log_pro_flux'] = [0. if x <= 0. else round( numpy.log10(x), 2 )\
                          for x in poesDF['ted_pro_total_flux']]
             # the current satellite number
             poesDF["sat"] = f[-20:-17]
