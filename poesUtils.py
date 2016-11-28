@@ -1,9 +1,10 @@
 if __name__ == "__main__":
     import datetime
     import poesUtils
-    inpDate = datetime.date.today()
+    inpDate = datetime.date(2016,1,2)
     poesObj = poesUtils.PoesData(inpDate)
-    a = poesObj.get_all_sat_data()
+    poesFiles = poesObj.get_all_sat_data(outDir="/Users/bharat/Desktop/poesTest")
+    print poesFiles
 
 class PoesData(object):
     """
@@ -35,9 +36,11 @@ class PoesData(object):
             return None
         return urlDict
 
-    def get_all_sat_data(self):
+    def get_all_sat_data(self,outDir="./"):
         import urllib
         import bs4
+        import shutil
+        import os
         urlDict = self.get_all_sat_urls()
         if urlDict is None:
             print "url retreival failed!"
@@ -47,28 +50,28 @@ class PoesData(object):
             return None
         try:
             # Get data from all the urls
+            fileList = []
             for currSat in urlDict.keys():
                 currFileName = "poes_" + currSat[0] + currSat[-3:-1] + "_"+\
                     self.inpDate.strftime("%Y%m%d") + "_proc.nc"
-                dwnldFile = urlDict[currSat] + currFileName
-                self.download_file( urlDict[currSat], currFileName )
+                print "downloading file from url-->" + \
+                    urlDict[currSat] + currFileName
+                self.get_file_from_url(urlDict[currSat], currFileName)
+                # List of files to return
+                fileList.append( outDir + "/" + currFileName )
+                # Move the files to destination folder
+                if outDir != "./":
+                    # check if file exists and then transfer!
+                    if os.path.isfile(outDir + "/" + currFileName):
+                        print "file exists! check again..."
+                    else:
+                        print "moving file to destination folder", currFileName
+                        shutil.move("./" + currFileName, outDir)
+            return fileList
         except:
+            print "download failed!!"
             return None
 
-    def download_file(self, url, fileName):
-        import requests
-        with open(fileName, "wb") as f:
-            print "Downloading %s" % fileName
-            response = requests.get(url, stream=True)
-            total_length = response.headers.get('content-length')
-            if total_length is None: # no content length header
-                f.write(response.content)
-            else:
-                dl = 0
-                total_length = int(total_length)
-                for data in response.iter_content(chunk_size=4096):
-                    dl += len(data)
-                    f.write(data)
-                    done = int(50 * dl / total_length)
-                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
-                    sys.stdout.flush()
+    def get_file_from_url(self, url, fileName):
+        import urllib
+        urllib.urlretrieve(url + fileName, fileName)
