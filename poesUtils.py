@@ -159,6 +159,10 @@ class PoesData(object):
         poesAllEleDataDF["time"] = poesAllEleDataDF["date"].map(lambda x: x.strftime('%H%M'))
         poesAllProDataDF["dateStr"] = poesAllProDataDF["date"].map(lambda x: x.strftime('%Y%m%d'))
         poesAllProDataDF["time"] = poesAllProDataDF["date"].map(lambda x: x.strftime('%H%M'))
-        # save as csv files
-        poesAllEleDataDF.to_csv(eleFluxFile, sep=' ', index=False)
-        poesAllProDataDF.to_csv(proFluxFile, sep=' ', index=False)
+        # save as csv files, only save selected columns
+        poesAllEleDataDF[ ["aacgm_lat_foot", "aacgm_lon_foot", \
+                "MLT", "log_ele_flux", "sat", "dateStr", "time"] ].to_csv(\
+                    eleFluxFile, sep=' ', index=False)
+        poesAllProDataDF[ ["aacgm_lat_foot", "aacgm_lon_foot", \
+                "MLT", "log_pro_flux", "sat", "dateStr", "time"] ].to_csv(\
+                    proFluxFile, sep=' ', index=False)
