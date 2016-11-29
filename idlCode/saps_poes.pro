@@ -3,11 +3,12 @@ pro saps_poes
 common rad_data_blk
 
 rad_load_colortable,/leicester
+poesSymSize = 0.65
 
 ;; events selected
-dateSel = [ 20130317 ]
-timeSel = [ 2000 ]
-dstIndex = [ -116. ]
+dateSel = [ 20150617 ]
+timeSel = [ 0900 ]
+dstIndex = [ -35. ]
 ;; set plot/map parameters
 xrangePlot = [-44, 44]
 yrangePlot = [-44,30]
@@ -98,25 +99,32 @@ fNamePoesPro = "/home/bharatr/Docs/data/proflux.txt"
 
 ;; cols - timestamp date aacgm_lat_foot aacgm_lon_foot MLT log_ele_flux sat dateStr time
 
+aacgm_lat_foot = fltarr(1)
+aacgm_lon_foot = fltarr(1)
+MLT = fltarr(1)
+log_ele_flux = fltarr(1)
+MLT = fltarr(1)
+dateStr = dblarr(1)
+timeCurr = fltarr(1)
 
-nel_arr_all = 100000
+nel_arr_all = 1000000.d
 
 mlatArrEle = fltarr(nel_arr_all)
 mlonArrEle = fltarr(nel_arr_all)
 mltArrEle = fltarr(nel_arr_all)
 logEleFluxArrEle = fltarr(nel_arr_all)
-satArrEle = strarr(nel_arr_all)
+satArrEle = intarr(nel_arr_all)
 dateArrEle = lonarr(nel_arr_all)
 timeArrEle = lonarr(nel_arr_all)
 julsArrEle = dblarr(nel_arr_all)
 
 
-nv=0
+nv=0.d
 OPENR, 1, fNamePoesEle
 WHILE not eof(1) do begin
     READF,1, aacgm_lat_foot, aacgm_lon_foot, MLT, log_ele_flux, sat, dateStr, timeCurr
 
-    print,aacgm_lat_foot, aacgm_lon_foot, MLT, log_ele_flux, sat, dateStr, timeCurr
+    ;print,aacgm_lat_foot, aacgm_lon_foot, MLT, log_ele_flux, sat, dateStr, timeCurr
 
 
     mlatArrEle[nv] = aacgm_lat_foot
@@ -127,11 +135,19 @@ WHILE not eof(1) do begin
     
     logEleFluxArrEle[nv] = log_ele_flux
     satArrEle[nv] = sat
-    dateArrEle[nv] = dateStr
+    dateArrEle[nv] = ulong( dateStr )
         
-    timeArrEle[nv] = timeCurr
+    timeArrEle[nv] = uint( timeCurr )
 
-    sfjul, dateStr, timeCurr, juls_curr
+    sfjul, ulong( dateStr ), uint( timeCurr ), juls_curr
+
+
+    ;if (juls_curr-jul_curr ge 0.) then begin
+    ;    print, ulong( dateStr ), uint( timeCurr ), juls_curr, jul_curr, juls_curr-jul_curr
+    ;endif else begin
+    ;    print, "juls_curr-jul_curr", ulong( dateStr ), uint( timeCurr ), juls_curr-jul_curr
+    ;endelse
+
     julsArrEle[nv] = juls_curr
 
     nv=nv+1   
@@ -159,16 +175,19 @@ print, "POES times selected-->", date_range_poes, time_range_poes
 
 
 
-jindsTimeSel = where( (julsArrEle ge jul_range_poes[0]) and (julsArrEle le jul_range_poes[1]) and ( mlatArrEle ge 50. ) )
+jindsTimeSel = where( (julsArrEle ge jul_range_poes[0]) and (julsArrEle le jul_range_poes[1]) and ( mlatArrEle ge 50. ) ); 
+
+;print, "jindsTimeSel--->", jindsTimeSel, jul_range_poes
 
 julsSelTimes = julsArrEle[ jindsTimeSel ]
+timesSelTimes = timeArrEle[ jindsTimeSel ]
 mlatSelTimes = mlatArrEle[ jindsTimeSel ]
 mlonSelTimes = mlonArrEle[ jindsTimeSel ]
 mltSelTimes = mltArrEle[ jindsTimeSel ]
 logEleFluxSelTimes = logEleFluxArrEle[ jindsTimeSel ]
 satSelTimes = satArrEle[ jindsTimeSel ]
 
-poesScale = [ min(logEleFluxSelTimes), max(logEleFluxSelTimes) ]
+poesScale = [ fix(min(logEleFluxSelTimes)), fix(max(logEleFluxSelTimes)) ]
 
 
 
@@ -186,9 +205,9 @@ map_plot_panel,date=dateSel[0],time=timeSel[0],coords=coords,/no_fill,xrange=xra
         title = string(dateSel[0]) + "-" + strtrim( string(timeSel[0]), 2), charsize = 0.5
 
 ;; overlay dmsp
-rad_map_overlay_dmsp, dateSel[0], timeSel[0], coords = coords, $
-                    hemisphere = hemisphere,/ssj, /ssies
-dmsp_ssj_fit_eqbnd, dateSel[0], timeSel[0], coords = coords              
+;rad_map_overlay_dmsp, dateSel[0], timeSel[0], coords = coords, $
+;                    hemisphere = hemisphere,/ssj, /ssies
+;dmsp_ssj_fit_eqbnd, dateSel[0], timeSel[0], coords = coords              
 
 ;; plot map potential vectors
 rad_map_read, dateSel[0]
@@ -204,17 +223,38 @@ rad_map_overlay_vectors, date = dateSel[0], time=timeSel[0], coords = coords, $
 
 for k = 0,n_elements(mlatSelTimes) -1 do begin
     
-    ;;if ( currProbSel[k] lt .2 ) then continue
+    ;if ( satSelTimes[k] gt 2 ) then continue
+
+    ;print, mlatSelTimes[k], mltSelTimes[k], satSelTimes[k], timesSelTimes[k]
 
     stereCr_low = calc_stereo_coords( mlatSelTimes[k], mltSelTimes[k], /mlt )
 
     colValCurr = get_color_index(logEleFluxSelTimes[k],scale=poesScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
     
-    oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
+    oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=poesSymSize
     
 endfor
 
 
+for k = 0,n_elements(mlatSelTimes) -1 do begin
+    
+    ;if ( satSelTimes[k] gt 2 ) then continue
+
+    ;print, mlatSelTimes[k], mltSelTimes[k], satSelTimes[k], timesSelTimes[k]
+
+    stereCr_low = calc_stereo_coords( mlatSelTimes[k], mltSelTimes[k], /mlt )
+
+    currSatNum = "n" + strtrim( string(satSelTimes[k]), 1 )
+    if ( satSelTimes[k] le 2 ) then $
+        currSatNum = "m" + strtrim( string(satSelTimes[k]), 1 )
+    if ( (k+satSelTimes[k]) mod 30 eq 0. ) then begin
+        xyouts, [stereCr_low[0]], [stereCr_low[1]+1.], currSatNum, charthick=1., charsize=0.5
+    endif
+    
+endfor
+
+
+plot_colorbar, 1., 1., 0., 0.,scale=poesScale,legend='POES Elec Flux (Log)', level_format='(f6.2)',param='power',/keep_first_last_label;;
 
 ps_close, /no_filename
 
