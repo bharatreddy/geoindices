@@ -88,7 +88,7 @@ load_usersym, /circle
 
 ps_open,'/home/bharatr/Docs/plots/saps-probs.ps'
 
-map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,0,0,/bar),/isotropic,grid_charsize='0.5',/north, $
+map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,0.5,2,/bar),/isotropic,grid_charsize='0.5',/north, $
 	title = "-150 < Dst < -75", charsize = 0.5
 
 currLatSel = latArr[jindsDst15075]
@@ -107,7 +107,7 @@ for k = 0,n_elements(currLatSel) -1 do begin
 	
 endfor
 
-map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,1,0,/bar),/isotropic,grid_charsize='0.5',/north, $
+map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,1,1,/bar),/isotropic,grid_charsize='0.5',/north, $
 	title = "-75 < Dst < -50", charsize = 0.5
 
 currLatSel = latArr[jindsDst7550]
@@ -147,7 +147,7 @@ for k = 0,n_elements(currLatSel) -1 do begin
 endfor
 
 
-map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,1,1,/bar),/isotropic,grid_charsize='0.5',/north, $
+map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,1,0,/bar),/isotropic,grid_charsize='0.5',/north, $
 	title = "-25 < Dst < -10", charsize = 0.5
 
 currLatSel = latArr[jindsDst2510]
@@ -167,7 +167,7 @@ for k = 0,n_elements(currLatSel) -1 do begin
 endfor
 
 
-map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,0.5,2,/bar),/isotropic,grid_charsize='0.5',/north, $
+map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,0,0,/bar),/isotropic,grid_charsize='0.5',/north, $
 	title = "-10 < Dst < 10", charsize = 0.5
 
 currLatSel = latArr[jindsDst1010]
