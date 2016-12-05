@@ -43,7 +43,7 @@ for srch=0.d,double(nele_search-1) do begin
 
 	map_plot_panel,date=dateCurrPlot,time=timeCurrPlot,coords=coords,/no_fill,xrange=xrangePlot, $
 	        yrange=yrangePlot,pos=define_panel(1,1,0,0,/bar),/isotropic,grid_charsize='0.5',/north, $
-	        title = strtrim( string(timeCurrPlot), 2) + "UT", charsize = 0.5
+	        title = strtrim( string(timeCurrPlot), 2) + " UT", charsize = 0.5
 
 	;;plot tec vectors
 	tec_median_filter,date=dateCurrTEC,time=timeCurrTEC
