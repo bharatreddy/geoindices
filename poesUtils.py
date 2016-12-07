@@ -1,17 +1,17 @@
 if __name__ == "__main__":
     import datetime
     import poesUtils
-    inpDate = datetime.date(2015,6,17)
+    inpDate = datetime.date(2015,4,9)
     poesObj = poesUtils.PoesData(inpDate)
-    # poesFiles = poesObj.get_all_sat_data(outDir="/home/bharat/Desktop/poesTest")
-    testFiles = ['/home/bharat/Desktop/poesTest/poes_n18_20150617_proc.nc', \
-                '/home/bharat/Desktop/poesTest/poes_m01_20150617_proc.nc', \
-                '/home/bharat/Desktop/poesTest/poes_n19_20150617_proc.nc', \
-                '/home/bharat/Desktop/poesTest/poes_m02_20150617_proc.nc', 
-                '/home/bharat/Desktop/poesTest/poes_n15_20150617_proc.nc']
-    poesObj.read_poes_data_files(testFiles, \
-                     eleFluxFile="/home/bharat/Desktop/poesTest/eleflux.txt",\
-                     proFluxFile="/home/bharat/Desktop/poesTest/proflux.txt")
+    poesFiles = poesObj.get_all_sat_data(outDir="/home/bharat/Desktop/poesTest")
+    # testFiles = ['/home/bharat/Desktop/poesTest/poes_n18_20150617_proc.nc', \
+    #             '/home/bharat/Desktop/poesTest/poes_m01_20150617_proc.nc', \
+    #             '/home/bharat/Desktop/poesTest/poes_n19_20150617_proc.nc', \
+    #             '/home/bharat/Desktop/poesTest/poes_m02_20150617_proc.nc', 
+    #             '/home/bharat/Desktop/poesTest/poes_n15_20150617_proc.nc']
+    poesObj.read_poes_data_files(poesFiles, \
+                     eleFluxFile="/home/bharat/Desktop/poesTest/eleflux-apr092015.txt",\
+                     proFluxFile="/home/bharat/Desktop/poesTest/proflux-apr092015.txt")
 
 class PoesData(object):
     """

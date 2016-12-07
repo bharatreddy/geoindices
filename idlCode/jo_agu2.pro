@@ -286,12 +286,14 @@ for srch=0,nele_search-1 do begin
 
 
 
-	rad_load_colortable, /leicester
+	;rad_load_colortable, /aj
+	;LOADCT, 32
+	;LOADCT, 10
 	;; plot map potential vectors and contours
 	
 	rad_map_overlay_vectors, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
-	                 /no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.35,fixed_color = get_red()
-
+	                 /no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.35,fixed_color = get_gray();get_cyan()
+	rad_load_colortable, /leicester
 	rad_map_overlay_contours, date = dateCurrPlot, time=timeCurrPlot, coords = coords, thick=7., /no_cross_pot_label, /no_legend, $
 					pos_color = get_black(), neg_color=get_black()
 
