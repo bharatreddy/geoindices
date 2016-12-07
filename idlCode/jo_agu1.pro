@@ -1,4 +1,4 @@
-pro jo_agu
+pro jo_agu1
 
 common rad_data_blk
 common radarinfo
@@ -35,7 +35,7 @@ if ( (num_hours_for_plot eq 24.) or (num_hours_for_plot eq 22.)) then begin
 endif
 
 if ( (num_hours_for_plot eq 23.) ) then begin
-	xticks_major_num = 9
+	xticks_major_num = 15
 	xminor_ticks_num = 6
 endif
 
@@ -183,7 +183,7 @@ for srch=0,nele_search-1 do begin
 			linecolor=get_blue(),linethick=2, ytitle=' ',ystyle=1,yminor=4,yticks=1,yrange=[0,800]
 
 
-    axis,fjul_search+0.07*(fjul_search-sjul_search),yaxis=1, ytitle="Vel[km/s]",color=get_blue(), $
+    axis,fjul_search+0.065*(fjul_search-sjul_search),yaxis=1, ytitle="Vel[km/s]",color=get_blue(), $
     			charsize=omnCharsize,ystyle=1,yminor=4,yticks=4,yrange=[0,800],ticklen=-0.005
 
     omn_plot_panel, date=dateCurrPlot, time=timeRange, position=pos_omn_panel, yrange=yrange_omn, $
@@ -275,7 +275,7 @@ for srch=0,nele_search-1 do begin
 
 
 	
-	;rad_load_colortable, /bw
+	rad_load_colortable, /bw
 	;;plot tec vectors
 	tec_median_filter,date=dateCurrTEC,time=timeCurrTEC
 	overlay_tec_median, date=dateCurrTEC, time=timeCurrTEC, scale=tecScale, coords=coords
@@ -287,12 +287,12 @@ for srch=0,nele_search-1 do begin
 	rad_load_colortable, /leicester
 	;; plot map potential vectors and contours
 	rad_map_overlay_vectors, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
-	                 /no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.5,/fixed_color
-	rad_map_overlay_contours, date = dateCurrPlot, time=timeCurrPlot, coords = coords, thick=5., /no_cross_pot_label, /no_legend, $
-					pos_color = get_black(), neg_color=get_black()
+	                 /no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.5;,/fixed_color
+	rad_map_overlay_contours, date = dateCurrPlot, time=timeCurrPlot, coords = coords, thick=5., /no_cross_pot_label, /no_legend;, $
+					;pos_color = get_black(), neg_color=get_black()
 
-	rad_map_overlay_dmsp, dateCurrPlot, timeCurrPlot, coords=coords, /ssies;,/ssj4
-	;rad_map_overlay_poes, dateCurrPlot, timeCurrPlot, coords=coords
+	;rad_map_overlay_dmsp, dateCurrPlot, timeCurrPlot, coords=coords, /ssies;,/ssj4
+	rad_map_overlay_poes, dateCurrPlot, timeCurrPlot, coords=coords
 
 	amp_overlay_current, date = dateCurrPlot, time=timeCurrPlot, coords = coords, scale=ampScale
 
@@ -303,8 +303,8 @@ for srch=0,nele_search-1 do begin
 	;map_label_grid, coords=coords
 
 	rad_load_colortable, /leicester
-	plot_colorbar, 1., 1.25, -0.1, 0.25, /square,scale=tecScale,legend='Total Electron Content [TECU]', level_format='(f6.2)',param='power',/keep_first_last_label;, /left
-	;plot_colorbar, 1., 1.25, -0.1, 0.25, /square, scale=velScale, parameter='velocity',/keep_first_last_label
+	;plot_colorbar, 1., 1., 0., 0., /square,scale=tecScale,legend='Total Electron Content [TECU]', level_format='(f6.2)',param='power',/keep_first_last_label;, /left
+	plot_colorbar, 1., 1.25, -0.1, 0.25, /square, scale=velScale, parameter='velocity',/keep_first_last_label
 
 endfor
 
