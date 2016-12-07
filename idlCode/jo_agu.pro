@@ -49,9 +49,10 @@ for srch=0,nele_search-1 do begin
 
 	_position = define_panel(1, 1, 0, 0, aspect=aspect, /bar) 
 
+	mapPos = define_panel(1,1,0,0,/bar)
 
 	map_plot_panel,date=dateCurrPlot,time=timeCurrPlot,coords=coords,/no_fill,xrange=xrangePlot, $
-	        yrange=yrangePlot,pos=define_panel(1,1,0,0,/bar),/isotropic,grid_charsize='0.5',/north, charsize = 0.5
+	        yrange=yrangePlot,pos=mapPos,/isotropic,grid_charsize='0.5',/north, charsize = 0.5
 
 
 	;; plot the time thing in hh:mm UT format
