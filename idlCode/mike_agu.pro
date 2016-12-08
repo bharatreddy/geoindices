@@ -9,9 +9,9 @@ common kpi_data_blk
 
 
 
-dateSel = 20150616;20150409
-timeRange = [ 0800,1000 ];[ 0730,0930 ]
-timeSel = [ 0900 ];[ 0830 ]
+dateSel = 20150616;20150409;
+timeRange = [ 0600,1200 ];[ 0730,0930 ]
+timeSel = [ 0900 ];[ 0900 ];
 
 ;; POES PLOT DEATIALS
 poesSymSize = 0.5
@@ -181,7 +181,7 @@ print, "POES times selected-->", date_range_poes, time_range_poes
 
 jindsTimeSel = where( (julsArrEle ge jul_range_poes[0]) and (julsArrEle le jul_range_poes[1]) and ( mlatArrEle ge 50. ) ); 
 
-if (jindsTimeSel ne -1) then begin
+if (jindsTimeSel[0] ne -1) then begin
 
 	julsSelTimes = julsArrEle[ jindsTimeSel ]
 	timesSelTimes = timeArrEle[ jindsTimeSel ]
@@ -397,12 +397,11 @@ rad_map_overlay_scan, rad_fan_ids, juls_curr, scale=velScale, coords=coords, $
 				param = 'velocity', /vector_scan, rad_sct_flg_val = 2, /AJ_filter;, $
 				;sc_values = 0, set_grnd = fix(velScale[1]/40.)
 
-rad_map_overlay_dmsp, dateSel, timeSel[0], coords=coords,/ssj4
-dmsp_ssj_fit_eqbnd, dateSel, timeSel[0], coords = coords
+
 
 ;; PLOT POES DATA
 ;; PLOT POES DATA
-if (jindsTimeSel ne -1) then begin
+if (jindsTimeSel[0] ne -1) then begin
 	for k = 0,n_elements(mlatSelTimes) -1 do begin
 	    
 
@@ -413,7 +412,12 @@ if (jindsTimeSel ne -1) then begin
 	    oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=poesSymSize
 	    
 	endfor
-endif
+endif else begin
+
+	rad_map_overlay_dmsp, dateSel, timeSel[0], coords=coords,/ssj4
+	dmsp_ssj_fit_eqbnd, dateSel, timeSel[0], coords = coords
+
+endelse
 
 
 ;; PLOT POES DATA
@@ -425,7 +429,7 @@ map_overlay_grid, grid_linestyle=0, grid_linethick=1, grid_linecolor=get_gray()
 ;map_label_grid, coords=coords
 
 
-plot_colorbar, 1., 1.4, -0.02, 0.4, /square,scale=tecScale,legend=TeXtoIDL('POES Elec Flux [#/cm^{2} s^{1} sr^{1} ev^{1}]'), level_format='(f6.2)',param='power', /left, charsize = 0.5
+plot_colorbar, 1., 1.4, -0.02, 0.4, /square,scale=tecScale,legend=TeXtoIDL('Log. POES Elec Flux [#/cm^{2} s^{1} sr^{1} ev^{1}]'), level_format='(f6.2)',param='power', /left, charsize = 0.5
 plot_colorbar, 1., 1.4, 0.02, 0.4, /square, scale=velScale, parameter='velocity', charsize = 0.5
 
 
