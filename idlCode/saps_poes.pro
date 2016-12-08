@@ -5,9 +5,14 @@ common rad_data_blk
 rad_load_colortable,/leicester
 poesSymSize = 0.65
 
+
+;; read data from the poes files
+fNamePoesEle = "/home/bharatr/Docs/data/eleflux-apr092015.txt"
+fNamePoesPro = "/home/bharatr/Docs/data/proflux-apr092015.txt"
+
 ;; events selected
-dateSel = [ 20150617 ]
-timeSel = [ 0900 ]
+dateSel = [ 20150409 ]
+timeSel = [ 0830 ]
 dstIndex = [ -35. ]
 ;; set plot/map parameters
 xrangePlot = [-44, 44]
@@ -93,9 +98,7 @@ endfor
 
 
 
-;; read data from the poes files
-fNamePoesEle = "/home/bharatr/Docs/data/eleflux.txt"
-fNamePoesPro = "/home/bharatr/Docs/data/proflux.txt"
+
 
 ;; cols - timestamp date aacgm_lat_foot aacgm_lon_foot MLT log_ele_flux sat dateStr time
 
@@ -198,7 +201,7 @@ poesScale = [ fix(min(logEleFluxSelTimes)), fix(max(logEleFluxSelTimes)) ]
 
 
 
-ps_open, '/home/bharatr/Docs/plots/saps-model-test.ps'
+ps_open, '/home/bharatr/Docs/plots/saps-poes-event' + strtrim(string(dateSel),2) + '.ps'
 
 map_plot_panel,date=dateSel[0],time=timeSel[0],coords=coords,/no_fill,xrange=xrangePlot, $
         yrange=yrangePlot,/no_coast,pos=define_panel(1,1,0,0,/bar),/isotropic,grid_charsize='0.5',/north, $
