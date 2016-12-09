@@ -286,9 +286,10 @@ for srch=0,nele_search-1 do begin
 
 
 
-	;LOADCT, 10
+	LOADCT, 11	
+	amp_overlay_current, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
+			scale=ampScale, thick=7., neg_color=70, pos_color=190;, /fill
 	;; plot map potential vectors and contours
-	amp_overlay_current, date = dateCurrPlot, time=timeCurrPlot, coords = coords, scale=ampScale, thick=7., /fill
 	rad_load_colortable, /leicester
 	rad_map_overlay_vectors, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
 	                 /no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.35;,fixed_color = 215
