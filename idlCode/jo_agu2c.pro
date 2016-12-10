@@ -10,11 +10,12 @@ common amp_data_blk
 
 
 
-dateSel = 20120327
-timeRange = [ 0000,2100 ]
+dateSel = [ 20121101, 20121101 ]
+timeRange = [ 0000,2400 ]
 
 
-
+dt_skip_time=10.d ;;; we search data the grd file every 2 min
+del_jul=dt_skip_time/1440.d ;;; This is the time step used to read the data --> Selected to be 60 min
 
 
 
@@ -74,8 +75,8 @@ endif
 ;;;; Print the date in a proper format on the plot, so get year, month and day from date variable.
 ;;;; Print the date in a proper format on the plot, so get year, month and day from date variable.
 ;;;; Print the date in a proper format on the plot, so get year, month and day from date variable.
-year_plot=fix(dateSel/1e4)
-mndy=double(dateSel)-double(year_plot*1e4)
+year_plot=fix(dateSel[0]/1e4)
+mndy=double(dateSel[0])-double(year_plot*1e4)
 month_plot=fix(mndy/1e2)
 day_plot=fix(mndy-month_plot*1e2)
 month_list_plot=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -129,15 +130,14 @@ amp_read, dateSel
 sfjul,dateSel,timeRange,sjul_search,fjul_search
 
 
-dt_skip_time=30.d ;;; we search data the grd file every 2 min
-del_jul=dt_skip_time/1440.d ;;; This is the time step used to read the data --> Selected to be 60 min
+
 
 nele_search=((fjul_search-sjul_search)/del_jul)+1 ;; Num of 2-min times to be searched..
 npanels = round((fjul_search-sjul_search)*1440.d/dt_skip_time) + 1
 
 
-;ps_open, '/home/bharatr/Docs/plots/jo-plots' + strtrim( string(dateSel), 2) + '.ps'
-ps_open, '/home/bharatr/Docs/plots/jo-plot.ps'
+ps_open, '/home/bharatr/Docs/plots/jo-plots-type3-' + strtrim( string(dateSel[0]), 2) + '.ps'
+;ps_open, '/home/bharatr/Docs/plots/jo-plot.ps'
 
 for srch=0,nele_search-1 do begin
 	clear_page
@@ -280,18 +280,19 @@ for srch=0,nele_search-1 do begin
 	
 	rad_load_colortable, /bw
 	;;plot tec vectors
-	tec_median_filter,date=dateCurrTEC,time=timeCurrTEC
+	tec_median_filter,date=dateCurrTEC,time=timeCurrTEC, threshold=0.10
 	overlay_tec_median, date=dateCurrTEC, time=timeCurrTEC, scale=tecScale, coords=coords
 
 
 
 
-	;LOADCT, 10
+	LOADCT, 11	
+	amp_overlay_current, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
+			scale=ampScale, thick=7., neg_color=70, pos_color=190;, /fill
 	;; plot map potential vectors and contours
-	amp_overlay_current, date = dateCurrPlot, time=timeCurrPlot, coords = coords, scale=ampScale, thick=7., /fill
 	rad_load_colortable, /leicester
 	rad_map_overlay_vectors, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
-	                 /no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.35;,fixed_color = 215
+	                 /no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.25;,fixed_color = 215
 	
 	;rad_map_overlay_contours, date = dateCurrPlot, time=timeCurrPlot, coords = coords, thick=7., /no_cross_pot_label, /no_legend;, $
 					;pos_color = get_black(), neg_color=get_black()

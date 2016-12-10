@@ -135,8 +135,8 @@ nele_search=((fjul_search-sjul_search)/del_jul)+1 ;; Num of 2-min times to be se
 npanels = round((fjul_search-sjul_search)*1440.d/dt_skip_time) + 1
 
 
-;ps_open, '/home/bharatr/Docs/plots/jo-plots' + strtrim( string(dateSel), 2) + '.ps'
-ps_open, '/home/bharatr/Docs/plots/jo-plot.ps'
+ps_open, '/home/bharatr/Docs/plots/jo-plots-type1' + strtrim( string(dateSel), 2) + '.ps'
+;ps_open, '/home/bharatr/Docs/plots/jo-plot-type1.ps'
 
 for srch=0,nele_search-1 do begin
 	clear_page

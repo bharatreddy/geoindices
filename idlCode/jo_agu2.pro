@@ -9,11 +9,12 @@ common kpi_data_blk
 
 
 
-dateSel = 20120327
-timeRange = [ 0000,2100 ]
+dateSel = [ 20121101, 20121101 ]
+timeRange = [ 0000,2400 ]
 
 
-
+dt_skip_time=10.d ;;; we search data the grd file every 2 min
+del_jul=dt_skip_time/1440.d ;;; This is the time step used to read the data --> Selected to be 60 min
 
 
 
@@ -73,8 +74,8 @@ endif
 ;;;; Print the date in a proper format on the plot, so get year, month and day from date variable.
 ;;;; Print the date in a proper format on the plot, so get year, month and day from date variable.
 ;;;; Print the date in a proper format on the plot, so get year, month and day from date variable.
-year_plot=fix(dateSel/1e4)
-mndy=double(dateSel)-double(year_plot*1e4)
+year_plot=fix(dateSel[0]/1e4)
+mndy=double(dateSel[0])-double(year_plot*1e4)
 month_plot=fix(mndy/1e2)
 day_plot=fix(mndy-month_plot*1e2)
 month_list_plot=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -128,15 +129,12 @@ rad_map_read, dateSel
 sfjul,dateSel,timeRange,sjul_search,fjul_search
 
 
-dt_skip_time=30.d ;;; we search data the grd file every 2 min
-del_jul=dt_skip_time/1440.d ;;; This is the time step used to read the data --> Selected to be 60 min
-
 nele_search=((fjul_search-sjul_search)/del_jul)+1 ;; Num of 2-min times to be searched..
 npanels = round((fjul_search-sjul_search)*1440.d/dt_skip_time) + 1
 
 
-;ps_open, '/home/bharatr/Docs/plots/jo-plots' + strtrim( string(dateSel), 2) + '.ps'
-ps_open, '/home/bharatr/Docs/plots/jo-plot.ps'
+ps_open, '/home/bharatr/Docs/plots/jo-plots-type1-' + strtrim( string(dateSel[0]), 2) + '.ps'
+;ps_open, '/home/bharatr/Docs/plots/jo-plot-1.ps'
 
 for srch=0,nele_search-1 do begin
 	clear_page
@@ -279,7 +277,7 @@ for srch=0,nele_search-1 do begin
 	
 	;rad_load_colortable, /bw
 	;;plot tec vectors
-	tec_median_filter,date=dateCurrTEC,time=timeCurrTEC
+	tec_median_filter,date=dateCurrTEC,time=timeCurrTEC, threshold=0.10
 	overlay_tec_median, date=dateCurrTEC, time=timeCurrTEC, scale=tecScale, coords=coords
 
 

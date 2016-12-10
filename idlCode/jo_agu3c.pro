@@ -1,4 +1,4 @@
-pro jo_agu2b
+pro jo_agu3c
 
 common rad_data_blk
 common radarinfo
@@ -6,15 +6,16 @@ common tec_data_blk
 common omn_data_blk
 common aur_data_blk
 common kpi_data_blk
+common amp_data_blk
 
 
 
 dateSel = [ 20121101, 20121101 ]
-timeRange = [ 0000,2400 ]
+timeRange = [ 0000,0100 ]
+
 
 dt_skip_time=10.d ;;; we search data the grd file every 2 min
 del_jul=dt_skip_time/1440.d ;;; This is the time step used to read the data --> Selected to be 60 min
-
 
 
 
@@ -124,11 +125,9 @@ omnCharsize = 0.5
 
 tec_read, dateSel
 rad_map_read, dateSel
-;amp_read, dateSel
+amp_read, dateSel
 
 sfjul,dateSel,timeRange,sjul_search,fjul_search
-
-
 
 
 
@@ -137,8 +136,8 @@ nele_search=((fjul_search-sjul_search)/del_jul)+1 ;; Num of 2-min times to be se
 npanels = round((fjul_search-sjul_search)*1440.d/dt_skip_time) + 1
 
 
-ps_open, '/home/bharatr/Docs/plots/jo-plots-type2-' + strtrim( string(dateSel[0]), 2) + '.ps'
-;ps_open, '/home/bharatr/Docs/plots/jo-plot-2.ps'
+ps_open, '/home/bharatr/Docs/plots/jo-plots-type3-new-' + strtrim( string(dateSel[0]), 2) + '.ps'
+;ps_open, '/home/bharatr/Docs/plots/jo-plot.ps'
 
 for srch=0,nele_search-1 do begin
 	clear_page
@@ -287,20 +286,22 @@ for srch=0,nele_search-1 do begin
 
 
 
-	LOADCT, 10
+	LOADCT, 11	
+	amp_overlay_current, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
+			scale=ampScale, thick=7., neg_color=70, pos_color=190, /fill;
 	;; plot map potential vectors and contours
-	
-	rad_map_overlay_vectors, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
-	                 /no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.35,fixed_color = 215
 	rad_load_colortable, /leicester
-	rad_map_overlay_contours, date = dateCurrPlot, time=timeCurrPlot, coords = coords, thick=7., /no_cross_pot_label, /no_legend;, $
+	;rad_map_overlay_vectors, date = dateCurrPlot, time=timeCurrPlot, coords = coords, $
+	                 ;/no_fov_names, /no_show_Nvc,/no_vector_scale, scale=velScale, symsize=0.25;,fixed_color = 215
+	
+	;rad_map_overlay_contours, date = dateCurrPlot, time=timeCurrPlot, coords = coords, thick=7., /no_cross_pot_label, /no_legend;, $
 					;pos_color = get_black(), neg_color=get_black()
 
 	
 	;rad_map_overlay_dmsp, dateCurrPlot, timeCurrPlot, coords=coords, /ssies;,/ssj4
 	rad_map_overlay_poes, dateCurrPlot, timeCurrPlot, coords=coords
 
-	;amp_overlay_current, date = dateCurrPlot, time=timeCurrPlot, coords = coords, scale=ampScale
+	;amp_overlay_current, date = dateCurrPlot, time=timeCurrPlot, coords = coords, scale=ampScale, thick=7.
 
 	print, "nor,tec-->", dateCurrPlot, timeCurrPlot, dateCurrTEC, timeCurrTEC
 
@@ -309,8 +310,8 @@ for srch=0,nele_search-1 do begin
 	;map_label_grid, coords=coords
 
 	rad_load_colortable, /leicester
-	;plot_colorbar, 1., 1.4, -0.15, 0.4plot_colorbar, 1., 1.4, -0.15, 0.4, /square,scale=tecScale,legend='Total Electron Content [TECU]', level_format='(f6.2)',param='power',/keep_first_last_label;, /left
-	;plot_colorbar, 1., 1.4, -0.15, 0.4, /square, scale=velScale, parameter='velocity',/keep_first_last_label
+	;plot_colorbar, 1., 1.4, -0.15, 0.4, /square,scale=tecScale,legend='Total Electron Content [TECU]', level_format='(f6.2)',param='power',/keep_first_last_label;, /left
+	plot_colorbar, 1., 1.4, -0.15, 0.4, /square, scale=velScale, parameter='velocity',/keep_first_last_label
 
 endfor
 
