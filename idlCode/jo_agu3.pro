@@ -9,8 +9,8 @@ common kpi_data_blk
 
 
 
-dateSel = [ 20120423, 20120423 ]
-timeRange = [ 0000,2400 ]
+dateSel = [ 20120423, 20120424 ]
+timeRange = [ 1700,0300 ]
 
 
 dt_skip_time=10.d ;;; we search data the grd file every 2 min
