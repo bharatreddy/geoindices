@@ -10,8 +10,8 @@ common amp_data_blk
 
 
 
-dateSel = [ 20120423, 20120424 ]
-timeRange = [ 1700,0300 ]
+dateSel = [ 20130317, 20130317 ]
+timeRange = [ 0500,2400 ]
 
 
 dt_skip_time=10.d ;;; we search data the grd file every 2 min

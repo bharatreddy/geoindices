@@ -45,7 +45,7 @@ maxTimeArr = maxTimeArr[0:rcnt-1]
 coords = "magn"
 
 
-fname_saps_vel = '../data/saps-vels-north.txt' 
+fname_saps_vel = '../data/test-vels-north.txt' 
 openw,1,fname_saps_vel
 
 for dtRdCnt=0.d,double(rcnt-1) do begin
@@ -70,7 +70,7 @@ for dtRdCnt=0.d,double(rcnt-1) do begin
 	print, "radId, radCode--> ", radId, " ", radCode
 
 
-	rad_fit_read, date, radCode, time=timeRange
+	rad_fit_read, date, radCode, time=timeRange, /filter
 
 
 	sfjul,date,timeRange,sjul_search,fjul_search
