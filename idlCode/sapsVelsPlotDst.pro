@@ -1,4 +1,4 @@
-pro sapsProbPlotDst
+pro sapsVelsPlotDst
 
 
 fNameSP = "/home/bharatr/Docs/data/sapsVels.txt"
@@ -9,8 +9,7 @@ nel_arr_all = 10000
 dstMedianArr = lonarr(nel_arr_all)
 countNppntsArr = intarr(nel_arr_all)
 maxCountsArr = intarr(nel_arr_all)
-estProbArr = fltarr(nel_arr_all)
-predProbArr = fltarr(nel_arr_all)
+meanVelArr = fltarr(nel_arr_all)
 mltArr = fltarr(nel_arr_all)
 
 latArr = fltarr(nel_arr_all)
@@ -21,19 +20,16 @@ dstBinArr = fltarr(nel_arr_all)
 nv=0
 OPENR, 1, fNameSP
 WHILE not eof(1) do begin
-    READF,1,dst_median, dataCount, maxCount, probOcc, predProb, currMLT, currLat
 
-    print,dst_median, dataCount, maxCount, probOcc, predProb, currMLT, currLat
+	;0.0 59.5 301.334863116 0.0 0.306648575305 -5.0
+	READF,1, currMLT, currLat, meanVel, normMLT, predProb, dst_median
+
+    print,currMLT, currLat, meanVel, normMLT, predProb, dst_median
 
 
     dstMedianArr[nv] = dst_median
-
-    countNppntsArr[nv] = dataCount
     
-    maxCountsArr[nv] = maxCount
-    
-    estProbArr[nv] = probOcc
-    predProbArr[nv] = predProb
+    meanVelArr[nv] = meanVel
     mltArr[nv] = currMLT
         
     latArr[nv] = currLat
@@ -58,8 +54,7 @@ dstMedianArr = dstMedianArr[0:nv-1]
 countNppntsArr = countNppntsArr[0:nv-1] 
 maxCountsArr = maxCountsArr[0:nv-1]
 
-estProbArr = estProbArr[0:nv-1] 
-predProbArr = predProbArr[0:nv-1] 
+meanVelArr = meanVelArr[0:nv-1] 
 mltArr = mltArr[0:nv-1]
 
 latArr = latArr[0:nv-1]
@@ -81,27 +76,27 @@ time = 0400
 coords = 'mlt'
 xrangePlot = [-44, 44]
 yrangePlot = [-44,20]
-probScale = [0,1.]
+velScale = [0,1000.]
 selSymThick = 0.5
 selSymSize = 0.5
 load_usersym, /circle
 
-ps_open,'/home/bharatr/Docs/plots/saps-probs.ps'
+ps_open,'/home/bharatr/Docs/plots/saps-vels-map.ps'
 
 map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yrange=yrangePlot,/no_coast,pos=define_panel(2,3,0.5,2,/bar),/isotropic,grid_charsize='0.5',/north, $
 	title = "-150 < Dst < -75", charsize = 0.5
 
 currLatSel = latArr[jindsDst15075]
 currMLTSel = mltArr[jindsDst15075]
-currProbSel = estProbArr[jindsDst15075]
+currVelSel = meanVelArr[jindsDst15075]
 
 for k = 0,n_elements(currLatSel) -1 do begin
 	
-	if ( currProbSel[k] lt .2 ) then continue
+	if ( currVelSel[k] lt .2 ) then continue
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currVelSel[k],scale=velScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -112,15 +107,15 @@ map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yran
 
 currLatSel = latArr[jindsDst7550]
 currMLTSel = mltArr[jindsDst7550]
-currProbSel = estProbArr[jindsDst7550]
+currVelSel = meanVelArr[jindsDst7550]
 
 for k = 0,n_elements(currLatSel) -1 do begin
 	
-	if ( currProbSel[k] lt .2 ) then continue
+	if ( currVelSel[k] lt .2 ) then continue
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currVelSel[k],scale=velScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -132,15 +127,15 @@ map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yran
 
 currLatSel = latArr[jindsDst5025]
 currMLTSel = mltArr[jindsDst5025]
-currProbSel = estProbArr[jindsDst5025]
+currVelSel = meanVelArr[jindsDst5025]
 
 for k = 0,n_elements(currLatSel) -1 do begin
 	
-	if ( currProbSel[k] lt .2 ) then continue
+	if ( currVelSel[k] lt .2 ) then continue
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currVelSel[k],scale=velScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -152,15 +147,15 @@ map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yran
 
 currLatSel = latArr[jindsDst2510]
 currMLTSel = mltArr[jindsDst2510]
-currProbSel = estProbArr[jindsDst2510]
+currVelSel = meanVelArr[jindsDst2510]
 
 for k = 0,n_elements(currLatSel) -1 do begin
 	
-	if ( currProbSel[k] lt .2 ) then continue
+	if ( currVelSel[k] lt .2 ) then continue
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currVelSel[k],scale=velScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -172,15 +167,15 @@ map_plot_panel,date=date,time=time,coords=coords,/no_fill,xrange=xrangePlot,yran
 
 currLatSel = latArr[jindsDst1010]
 currMLTSel = mltArr[jindsDst1010]
-currProbSel = estProbArr[jindsDst1010]
+currVelSel = meanVelArr[jindsDst1010]
 
 for k = 0,n_elements(currLatSel) -1 do begin
 	
-	if ( currProbSel[k] lt .2 ) then continue
+	if ( currVelSel[k] lt .2 ) then continue
 
 	stereCr_low = calc_stereo_coords( currLatSel[k], currMLTSel[k], /mlt )
 
-	colValCurr = get_color_index(currProbSel[k],scale=probScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
+	colValCurr = get_color_index(currVelSel[k],scale=velScale,colorsteps=get_colorsteps(),ncolors=get_ncolors(), param='power')
 	
 	oplot, [stereCr_low[0]], [stereCr_low[1]], color = colValCurr,thick = selSymThick, psym=8, SYMSIZE=selSymSize
 	
@@ -188,7 +183,7 @@ endfor
 
 
 
-plot_colorbar, 1., 1., 0., 0.,scale=probScale,legend='Prob of SAPS', level_format='(f6.2)',param='power',/keep_first_last_label
+plot_colorbar, 1., 1., 0., 0.,scale=velScale,legend='SAPS Velocity [m/s]', param='power'
 
 ps_close, /no_filename
 
