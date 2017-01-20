@@ -1,7 +1,7 @@
 pro sapsProbPlotDst
 
 
-fNameSP = "/home/bharatr/Docs/data/sapsVels.txt"
+fNameSP = "/home/bharatr/Docs/data/saps-probs.txt"
 
 rad_load_colortable,/leicester
 
