@@ -1,23 +1,21 @@
-pro get_all_events, date_rng
+pro get_all_events
 
 common rad_data_blk
 
-if (~Keyword_set(date_rng)) then begin
-	date_rng = [ 20110101, 20141231 ]
-endif
+date_rng = [ 20110101, 20141231 ]
 
 
 
 time_rng=[0000,1200]
 
-del_skip_time = 2.d
+del_skip_time = 30.d
 del_juls = del_skip_time/1440.d ;;; This is the time step used to read the data
 saps_vel_cutoff = 200.
 
 saps_azim_range = [ -105, -75 ]
 int_hemi = 0
 coords = 'magn'
-
+midlatRadIds = [209, 208, 33, 207, 206, 205, 204, 32]
 
 dt_skip_time=1440.d ;;; we search data the grd file every 60 min
 del_jul=dt_skip_time/1440.d ;;; This is the time step used to read the data --> Selected to be 60 min
@@ -25,7 +23,7 @@ sfjul, date_rng, time_rng, sjul_day, fjul_day
 ndays_search=((fjul_day-sjul_day)/del_jul)+1 ;; Num of 2-min times to be searched..
 
 ;; write data to the file
-fname_saps_raw_north = '/home/bharatr/Docs/data/all-mid-lat-data-north-2011-2015.txt' 
+fname_saps_raw_north = '/home/bharatr/Docs/data/filtered-mid-lat-data-north-2011-2014.txt' 
 openw,1,fname_saps_raw_north
 
 for srchDay=0.d,double(ndays_search) do begin
@@ -33,7 +31,7 @@ for srchDay=0.d,double(ndays_search) do begin
 	;;;Calculate the current jul
 	juls_day=sjul_day+srchDay*del_jul
     sfjul,dateDay,timeDay,juls_day,/jul_to_date
-    print, "date--------------------------------------------------------------->", dateDay
+    print, "date and time sel--->", dateDay,timeDay
 
     rad_map_read, dateDay
 	sfjul, dateDay, time_rng, sjjCurr, fjjCurr
@@ -92,42 +90,44 @@ for srchDay=0.d,double(ndays_search) do begin
 
 			caldat,jul_curr, evnt_month, evnt_day, evnt_year, strt_hour, strt_min, strt_sec
 			for mm = 0, n_elements( vdata[1,*] )-1 do begin
-				mlt_vdata[mm] = mlt( evnt_year, timeymdhmstoyrsec( evnt_year, evnt_month, evnt_day, strt_hour, strt_min, strt_sec ), vdata[1,mm] )		
+				mlt_vdata[mm] = -1. ;; fake some data to reduce calc times
 			endfor
 
-			;; Get the equ. elec. prec bnd data
-			if ( ( abs(fitPOESjul -jul_curr) gt 30.d/1440.d) or srch eq 0 ) then begin
-				fitPOESjul = jul_curr
-			endif
-
 			
-
 			saps_check_vel1 = vdata[2,*]
 			saps_check_lat1 = vdata[0,*]
 			saps_check_mlt1 = mlt_vdata[*]
 			saps_check_azim1 = vdata[3,*]
+			saps_check_st_ids = vdata[4,*]
 			
 
 			saps_Lats_this_mlt = saps_check_lat1
 			saps_Mlts_this_mlt = saps_check_mlt1
 			saps_Vels_this_mlt = saps_check_vel1
 			saps_Azims_this_mlt = saps_check_azim1
-			
-		
+			saps_station_ids = saps_check_st_ids
+
 			
 			Final_SAPS_Lats = saps_Lats_this_mlt
 			Final_SAPS_Mlts = saps_Mlts_this_mlt
 			Final_SAPS_Vels = saps_Vels_this_mlt
+			Final_SAPS_Stations = saps_station_ids
 			Final_EPR_lat = 90.
-				
-			for fsp = 0, n_elements(Final_SAPS_Lats)-1 do begin
-				;print, "ALL data --> lats, mlt, vel, eprlat", date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_EPR_lat
-				printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_EPR_lat, $
-                                                            format = '(I8, I5, 2f9.4, f11.4, I5, f9.4)'
-			endfor
+			POS_eq_eloval_bnd_this_mlt = [ 90., 90. ]
 			
-					
-		
+			for fsp = 0, n_elements(Final_SAPS_Lats)-1 do begin
+
+				; only choose midlat-radar ids, file becomes huge otherwise
+				jindsMidlatChkRad = where( midlatRadIds eq Final_SAPS_Stations[fsp] )
+
+				if ( jindsMidlatChkRad[0] ne -1 ) then begin
+					;print, "SAPS --> lats, mlt, vel, eprlat", date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], POS_eq_eloval_bnd_this_mlt, Final_SAPS_Stations[fsp]
+					printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_SAPS_Stations[fsp], POS_eq_eloval_bnd_this_mlt[0],POS_eq_eloval_bnd_this_mlt[1], $
+                                                            format = '(I8, I5, 2f9.4, f11.4, f9.4, 2f9.4)'
+                endif
+			endfor
+				
+			
 
 	endfor
 	
