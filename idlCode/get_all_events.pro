@@ -33,7 +33,7 @@ for srchDay=0.d,double(ndays_search) do begin
 	;;;Calculate the current jul
 	juls_day=sjul_day+srchDay*del_jul
     sfjul,dateDay,timeDay,juls_day,/jul_to_date
-    ;;print, datesel, timesel
+    print, "date--------------------------------------------------------------->", dateDay
 
     rad_map_read, dateDay
 	sfjul, dateDay, time_rng, sjjCurr, fjjCurr
@@ -97,14 +97,10 @@ for srchDay=0.d,double(ndays_search) do begin
 
 			;; Get the equ. elec. prec bnd data
 			if ( ( abs(fitPOESjul -jul_curr) gt 30.d/1440.d) or srch eq 0 ) then begin
-				equ_oval_bnd_data_arr = aur_equ_bnd( date_curr, time_curr )
 				fitPOESjul = jul_curr
 			endif
 
-			if ( equ_oval_bnd_data_arr[0,0] eq 0. ) then begin
-				print, "no data in poes!"
-				continue
-			endif
+			
 
 			saps_check_vel1 = vdata[2,*]
 			saps_check_lat1 = vdata[0,*]
@@ -124,17 +120,13 @@ for srchDay=0.d,double(ndays_search) do begin
 			Final_SAPS_Vels = saps_Vels_this_mlt
 			Final_EPR_lat = 90.
 				
-				for fsp = 0, n_elements(Final_SAPS_Lats)-1 do begin
-					print, "SAPS --> lats, mlt, vel, eprlat", date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_EPR_lat
-					printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_EPR_lat, $
-                                                                format = '(I8, I5, 2f9.4, f11.4, I5, f9.4)'
-				endfor
-				
-			endif else begin
-				;print, "no lat lon found 1"
-				continue
-			endelse
-		
+			for fsp = 0, n_elements(Final_SAPS_Lats)-1 do begin
+				;print, "ALL data --> lats, mlt, vel, eprlat", date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_EPR_lat
+				printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_EPR_lat, $
+                                                            format = '(I8, I5, 2f9.4, f11.4, I5, f9.4)'
+			endfor
+			
+					
 		
 
 	endfor
