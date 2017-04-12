@@ -23,7 +23,7 @@ sfjul, date_rng, time_rng, sjul_day, fjul_day
 ndays_search=((fjul_day-sjul_day)/del_jul)+1 ;; Num of 2-min times to be searched..
 
 ;; write data to the file
-fname_saps_raw_north = '/home/bharatr/Docs/data/filtered-mid-lat-data-north-2011-2014.txt' 
+fname_saps_raw_north = '/home/bharatr/Docs/data/newFilt-mid-lat-data-north-2011-2014.txt' 
 openw,1,fname_saps_raw_north
 
 for srchDay=0.d,double(ndays_search) do begin
@@ -90,7 +90,7 @@ for srchDay=0.d,double(ndays_search) do begin
 
 			caldat,jul_curr, evnt_month, evnt_day, evnt_year, strt_hour, strt_min, strt_sec
 			for mm = 0, n_elements( vdata[1,*] )-1 do begin
-				mlt_vdata[mm] = -1. ;; fake some data to reduce calc times
+				mlt_vdata[mm] = mlt( evnt_year, timeymdhmstoyrsec( evnt_year, evnt_month, evnt_day, strt_hour, strt_min, strt_sec ), vdata[1,mm] );-1. ;; fake some data to reduce calc times
 			endfor
 
 			
