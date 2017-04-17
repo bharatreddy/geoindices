@@ -114,6 +114,7 @@ for srchDay=0.d,double(ndays_search) do begin
 			Final_SAPS_Stations = saps_station_ids
 			Final_EPR_lat = 90.
 			POS_eq_eloval_bnd_this_mlt = [ 90., 90. ]
+			Final_SAPS_Azims = saps_Azims_this_mlt
 			
 			for fsp = 0, n_elements(Final_SAPS_Lats)-1 do begin
 
@@ -122,8 +123,8 @@ for srchDay=0.d,double(ndays_search) do begin
 
 				if ( jindsMidlatChkRad[0] ne -1 ) then begin
 					;print, "SAPS --> lats, mlt, vel, eprlat", date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], POS_eq_eloval_bnd_this_mlt, Final_SAPS_Stations[fsp]
-					printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_SAPS_Stations[fsp], POS_eq_eloval_bnd_this_mlt[0],POS_eq_eloval_bnd_this_mlt[1], $
-                                                            format = '(I8, I5, 2f9.4, f11.4, f9.4, 2f9.4)'
+					printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_SAPS_Azims[fsp], Final_SAPS_Stations[fsp], POS_eq_eloval_bnd_this_mlt[0],POS_eq_eloval_bnd_this_mlt[1], $
+                                                            format = '(I8, I5, 2f9.4, f11.4, 2f9.4, 2f9.4)'
                 endif
 			endfor
 				
