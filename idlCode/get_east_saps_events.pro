@@ -33,7 +33,7 @@ for srchDay=0.d,double(ndays_search) do begin
 	;;;Calculate the current jul
 	juls_day=sjul_day+srchDay*del_jul
     sfjul,dateDay,timeDay,juls_day,/jul_to_date
-    print, "date and time sel--->", dateDay,timeDay
+    
 
     rad_map_read, dateDay
 	sfjul, dateDay, time_rng, sjjCurr, fjjCurr
@@ -44,7 +44,7 @@ for srchDay=0.d,double(ndays_search) do begin
 			jul_curr = sjjCurr + srch*del_juls 
 
 			sfjul, date_curr, time_curr, jul_curr, /jul_to_date
-	
+			print, "date and time sel--->", date_curr,time_curr
 			date_curr = date_curr[0]
 
 			fitPOESjul = jul_curr
@@ -96,10 +96,8 @@ for srchDay=0.d,double(ndays_search) do begin
 			endfor
 
 			;; Get the equ. elec. prec bnd data
-			if ( ( abs(fitPOESjul -jul_curr) gt 30.d/1440.d) or srch eq 0 ) then begin
-				equ_oval_bnd_data_arr = aur_equ_bnd( date_curr, time_curr )
-				fitPOESjul = jul_curr
-			endif
+			equ_oval_bnd_data_arr = aur_equ_bnd( date_curr, time_curr )
+			fitPOESjul = jul_curr
 
 			if ( equ_oval_bnd_data_arr[0,0] eq 0. ) then begin
 				print, "no data in poes!"
