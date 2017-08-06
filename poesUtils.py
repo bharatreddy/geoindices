@@ -1,17 +1,12 @@
-if __name__ == "__main__":
-    import datetime
-    import poesUtils
-    inpDate = datetime.date(2015,6,17)
-    poesObj = poesUtils.PoesData(inpDate)
-    poesFiles = poesObj.get_all_sat_data(outDir="/home/bharat/Desktop/poesTest")
-    # testFiles = ['/home/bharat/Desktop/poesTest/poes_n18_20150617_proc.nc', \
-    #             '/home/bharat/Desktop/poesTest/poes_m01_20150617_proc.nc', \
-    #             '/home/bharat/Desktop/poesTest/poes_n19_20150617_proc.nc', \
-    #             '/home/bharat/Desktop/poesTest/poes_m02_20150617_proc.nc', 
-    #             '/home/bharat/Desktop/poesTest/poes_n15_20150617_proc.nc']
-    poesObj.read_poes_data_files(poesFiles, \
-                     eleFluxFile="/home/bharat/Desktop/poesTest/eleflux-jun172015.txt",\
-                     proFluxFile="/home/bharat/Desktop/poesTest/proflux-jun172015.txt")
+import urllib
+import bs4
+import ssl
+import shutil
+import os
+import netCDF4
+import pandas
+import datetime
+import numpy
 
 class PoesData(object):
     """
@@ -25,12 +20,13 @@ class PoesData(object):
         self.inpDate = inpDate
 
     def get_all_sat_urls(self, dataFolder="./"):
-        import urllib
-        import bs4
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
         # get a list of satellites avaiable for the date
         yearUrl = self.homepage + str( self.inpDate.year )
         try:
-            conn = urllib.urlopen(yearUrl)
+            conn = urllib.urlopen(yearUrl, context=ctx)
             htmlSource = conn.read()
             soup = bs4.BeautifulSoup(htmlSource, 'html.parser')
             # Get all the urls
@@ -44,10 +40,6 @@ class PoesData(object):
         return urlDict
 
     def get_all_sat_data(self,outDir="./"):
-        import urllib
-        import bs4
-        import shutil
-        import os
         # generate urls to download POES satellite data from 
         # all files for a given date
         urlDict = self.get_all_sat_urls()
@@ -82,16 +74,10 @@ class PoesData(object):
             return None
 
     def get_file_from_url(self, url, fileName):
-        import urllib
         # Download a given poes file
         urllib.urlretrieve(url + fileName, fileName)
 
-    def read_poes_data_files(self, fileList, eleFluxFile="./eleflux.csv",\
-                     proFluxFile="./proflux.csv"):
-        import netCDF4
-        import pandas
-        import datetime
-        import numpy
+    def read_poes_data_files(self, fileList):
         # read data from given POES files
         # Note these should be local files
         # and I expect a list for input
@@ -165,10 +151,21 @@ class PoesData(object):
         poesAllEleDataDF["time"] = poesAllEleDataDF["date"].map(lambda x: x.strftime('%H%M'))
         poesAllProDataDF["dateStr"] = poesAllProDataDF["date"].map(lambda x: x.strftime('%Y%m%d'))
         poesAllProDataDF["time"] = poesAllProDataDF["date"].map(lambda x: x.strftime('%H%M'))
-        # save as csv files, only save selected columns
-        poesAllEleDataDF[ ["aacgm_lat_foot", "aacgm_lon_foot", \
-                "MLT", "log_ele_flux", "sat", "dateStr", "time"] ].to_csv(\
-                    eleFluxFile, sep=' ', index=False)
-        poesAllProDataDF[ ["aacgm_lat_foot", "aacgm_lon_foot", \
-                "MLT", "log_pro_flux", "sat", "dateStr", "time"] ].to_csv(\
-                    proFluxFile, sep=' ', index=False)
+        return ( poesAllEleDataDF, poesAllProDataDF )
+
+    def get_aur_bnd_locs( self, poesAllEleDataDF, poesAllProDataDF, timeRange,\
+         timeInterval=datetime.timedelta(minutes=30) ):
+        # given a timeRange, timestep
+        # get the locations of auroral boundaries
+        # for each of the satellites.
+        ctime = timeRange[0]
+        while ctime <= timeRange[1]:
+            ctime += timeInterval
+        # We'll calculate both electron and ion precipitation boundaries
+        # Electron Precipitaion boundary
+        poesAllEleDataDF["delCtime"] = abs(poesAllEleDataDF["date"] - ctime)
+        print poesAllEleDataDF[ ( abs(poesAllEleDataDF["aacgm_lat_foot"]) > 45. ) &\
+                     ( abs(poesAllEleDataDF["delCtime"]) == poesAllEleDataDF["delCtime"].min() ) ]
+
+
+
