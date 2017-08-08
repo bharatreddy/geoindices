@@ -6,7 +6,7 @@ FUNCTION POES_FIT_FUNCT_MAGN, X, PAR
   RETURN, PAR[0] + PAR[1]* cos( 2*!pi*(X/360.) + PAR[2] )
 END
 
-FUNCTION aur_equ_bnd, date, time
+FUNCTION aur_equ_bnd, date, time, coords=coords
 
 common pos_data_blk
 
