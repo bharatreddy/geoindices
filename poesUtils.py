@@ -18,6 +18,11 @@ class PoesData(object):
         self.homepage = "http://satdat.ngdc.noaa.gov/" +\
              "sem/poes/data/processed/ngdc/uncorrected/full/"
         self.inpDate = inpDate
+        self.minCutoffFitLat = 45.
+        self.delTimeCutOffNrstPass = 50 # min
+        self.mlonDiffOtrEndCutoff = 50.
+        self.delLatCutoff = 2.
+        self.delCtimeCutoff = 60. #min
 
     def get_all_sat_urls(self, dataFolder="./"):
         ctx = ssl.create_default_context()
@@ -94,7 +99,7 @@ class PoesData(object):
         poesAllProDataDF = pandas.DataFrame( columns =  ["timestamp", "date", "aacgm_lat_foot",\
                                  "aacgm_lon_foot", "MLT", "log_pro_flux", "sat"] )
         for f in fileList:
-            print "reading file-->", f
+            # print "reading file-->", f
             # read variable from the netCDF files
             poesRawData = netCDF4.Dataset(f)
             poesDF = pandas.DataFrame( poesRawData.variables['time'][:], columns=[ "timestamp" ] )
@@ -153,19 +158,173 @@ class PoesData(object):
         poesAllProDataDF["time"] = poesAllProDataDF["date"].map(lambda x: x.strftime('%H%M'))
         return ( poesAllEleDataDF, poesAllProDataDF )
 
-    def get_aur_bnd_locs( self, poesAllEleDataDF, poesAllProDataDF, timeRange,\
+    def get_closest_sat_passes( self, poesAllEleDataDF, poesAllProDataDF, timeRange,\
          timeInterval=datetime.timedelta(minutes=30) ):
         # given a timeRange, timestep
         # get the locations of auroral boundaries
         # for each of the satellites.
+        outDFList = []
         ctime = timeRange[0]
         while ctime <= timeRange[1]:
             ctime += timeInterval
-        # We'll calculate both electron and ion precipitation boundaries
-        # Electron Precipitaion boundary
-        poesAllEleDataDF["delCtime"] = abs(poesAllEleDataDF["date"] - ctime)
-        print poesAllEleDataDF[ ( abs(poesAllEleDataDF["aacgm_lat_foot"]) > 45. ) &\
-                     ( abs(poesAllEleDataDF["delCtime"]) == poesAllEleDataDF["delCtime"].min() ) ]
+            # We only need those times when POES was above self.minCutoffFitLat(45) MLAT
+            poesAllEleDataDF = poesAllEleDataDF[ \
+                            ( abs( poesAllEleDataDF["aacgm_lat_foot"] ) >= self.minCutoffFitLat )\
+                            ].reset_index(drop=True)
+            # We only need a few columns, discard the rest
+            poesAllEleDataDF = poesAllEleDataDF[ [ 'sat', 'date',\
+                                    'aacgm_lat_foot', 'aacgm_lon_foot',\
+                                        'MLT', 'log_ele_flux' ] ]
+            poesAllEleDataDF["delCtime"] = abs(poesAllEleDataDF["date"] - ctime)
+            poesAllEleDataDF["delLatFit"] = abs( abs( poesAllEleDataDF["aacgm_lat_foot"] ) -\
+                                                abs( self.minCutoffFitLat ) )
+            # We are sorting by sats, dates and lats to pick the nearest time
+            # when the satellite is between two 45 MLATs
+            poesAllEleDataDFNth = poesAllEleDataDF[ poesAllEleDataDF["aacgm_lat_foot"]\
+                                    >= 0. ].sort_values( ['sat', 'date', 'aacgm_lat_foot'],\
+                                            ascending=True ).reset_index(drop=True).drop_duplicates()
+            poesAllEleDataDFSth = poesAllEleDataDF[ poesAllEleDataDF["aacgm_lat_foot"]\
+                                    < 0. ].sort_values( ['sat', 'date', 'aacgm_lat_foot'],\
+                                            ascending=True ).reset_index(drop=True).drop_duplicates()
+            # Now we need to pick the satellite path
+            # which is closest to the selected time.!
+            # Northern Hemisphere
+            poesAllEleDataDFNthST = poesAllEleDataDFNth[ \
+                                        (poesAllEleDataDFNth["date"] \
+                                            >= ctime-datetime.timedelta(\
+                                            minutes=self.delTimeCutOffNrstPass)) &\
+                                            (poesAllEleDataDFNth["date"] <=\
+                                             ctime+datetime.timedelta(\
+                                            minutes=self.delTimeCutOffNrstPass))].reset_index(drop=True)
+            poesAllEleDataDFNthST = poesAllEleDataDFNthST.sort_values(\
+                                        ["sat","date"], ascending=[True, True]\
+                                        ).reset_index(drop=True)
+            # We'll get the the satellite pass which is moving polewards
+            # Basically percent change in latitudes should be positive
+            # for a satellite moving polewards (percent change would help
+            # with the southern hemisphere lcoations.)
+            poesAllEleDataDFNthST["latRowDiffs"] = poesAllEleDataDFNthST.groupby("sat")[[\
+                            "aacgm_lat_foot" ] ].pct_change()
+            poesAllEleDataDFNthST = poesAllEleDataDFNthST[\
+                                    poesAllEleDataDFNthST["latRowDiffs"] > 0.\
+                                    ].reset_index(drop=True)
+            poesAllEleDataDFNthST = poesAllEleDataDFNthST.sort_values(\
+                                        ["sat", "aacgm_lat_foot","delCtime"]\
+                                        ).reset_index(drop=True)
+            # get the start time
+            selTimeRangeNthDF = poesAllEleDataDFNthST.groupby("sat").first().reset_index()
+            # Now if the time difference is too large, discard the satellite data
+            selTimeRangeNthDF = selTimeRangeNthDF[ selTimeRangeNthDF["delCtime"] <= \
+                                datetime.timedelta(minutes=self.delTimeCutOffNrstPass)\
+                                ].reset_index()
+            selTimeRangeNthDF = selTimeRangeNthDF[ ["sat", "date"] ]
+            selTimeRangeNthDF.columns = [ "sat", "start_time" ] 
+
+            # Now get the end times, simply get all times that are
+            # greater than start time, sort them by date and get
+            # lowest deLatFit
+            poesAllEleDataDFNthET = pandas.merge( poesAllEleDataDFNth,\
+                                        selTimeRangeNthDF, on="sat" )
+            poesAllEleDataDFNthET = poesAllEleDataDFNthET[ (\
+                                            poesAllEleDataDFNthET["date"] >=\
+                                            poesAllEleDataDFNthET["start_time"] ) &\
+                                            (poesAllEleDataDFNthET["date"] <=\
+                                            poesAllEleDataDFNthET["start_time"]+datetime.timedelta(\
+                                            minutes=self.delTimeCutOffNrstPass)) ].reset_index(drop=True)
+            poesAllEleDataDFNthET = poesAllEleDataDFNthET.sort_values(\
+                                        ["sat","date"], ascending=[True, True]\
+                                        ).reset_index(drop=True)
+            # We'll get the the satellite pass which is moving equatorwards
+            # Basically percent change in latitudes should be negative
+            # for a satellite moving polewards (percent change would help
+            # with the southern hemisphere lcoations.)
+            poesAllEleDataDFNthET["latRowDiffs"] = poesAllEleDataDFNthET.groupby("sat")[[\
+                            "aacgm_lat_foot" ] ].pct_change()
+            poesAllEleDataDFNthET = poesAllEleDataDFNthET[\
+                                    poesAllEleDataDFNthET["latRowDiffs"] < 0.\
+                                    ].reset_index(drop=True)
+            poesAllEleDataDFNthET = poesAllEleDataDFNthET.sort_values(\
+                                        ["sat", "aacgm_lat_foot","delCtime"]\
+                                        ).reset_index(drop=True)
+            # get the start time
+            eTimeNthDF = poesAllEleDataDFNthET.groupby("sat").first().reset_index()
+            eTimeNthDF = eTimeNthDF[ ["sat", "date"] ]
+            eTimeNthDF.columns = [ "sat", "end_time" ] 
+            selTimeRangeNthDF = pandas.merge( selTimeRangeNthDF, eTimeNthDF, on="sat" )
+            selTimeRangeNthDF["selTime"] = ctime
+            # Now we need to pick the satellite path
+            # which is closest to the selected time.!
+            # Northern Hemisphere
+            poesAllEleDataDFSthST = poesAllEleDataDFSth[ \
+                                        (poesAllEleDataDFSth["date"] \
+                                            >= ctime-datetime.timedelta(\
+                                            minutes=self.delTimeCutOffNrstPass)) &\
+                                            (poesAllEleDataDFSth["date"] <=\
+                                             ctime+datetime.timedelta(\
+                                            minutes=self.delTimeCutOffNrstPass))].reset_index(drop=True)
+            poesAllEleDataDFSthST = poesAllEleDataDFSthST.sort_values(\
+                                        ["sat","date"], ascending=[True, True]\
+                                        ).reset_index(drop=True)
+            # We'll get the the satellite pass which is moving polewards
+            # Basically percent change in latitudes should be positive
+            # for a satellite moving polewards (percent change would help
+            # with the southern hemisphere lcoations.)
+            poesAllEleDataDFSthST["latRowDiffs"] = poesAllEleDataDFSthST.groupby("sat")[[\
+                            "aacgm_lat_foot" ] ].pct_change()
+            poesAllEleDataDFSthST = poesAllEleDataDFSthST[\
+                                    poesAllEleDataDFSthST["latRowDiffs"] > 0.\
+                                    ].reset_index(drop=True)
+            poesAllEleDataDFSthST = poesAllEleDataDFSthST.sort_values(\
+                                        ["sat", "aacgm_lat_foot","delCtime"],\
+                                        ascending=[True, False, True]\
+                                        ).reset_index(drop=True)
+            # # get the start time
+            selTimeRangeSthDF = poesAllEleDataDFSthST.groupby("sat").first().reset_index()
+            # Now if the time difference is too large, discard the satellite data
+            selTimeRangeSthDF = selTimeRangeSthDF[ selTimeRangeSthDF["delCtime"] <= \
+                                datetime.timedelta(minutes=self.delTimeCutOffNrstPass)\
+                                ].reset_index()
+            selTimeRangeSthDF = selTimeRangeSthDF[ ["sat", "date"] ]
+            selTimeRangeSthDF.columns = [ "sat", "start_time" ] 
 
 
-
+            # # Now get the end times, simply get all times that are
+            # # greater than start time, sort them by date and get
+            # # lowest deLatFit
+            poesAllEleDataDFSthET = pandas.merge( poesAllEleDataDFSth,\
+                                        selTimeRangeSthDF, on="sat" )
+            poesAllEleDataDFSthET = poesAllEleDataDFSthET[ (\
+                                            poesAllEleDataDFSthET["date"] >=\
+                                            poesAllEleDataDFSthET["start_time"] ) &\
+                                            (poesAllEleDataDFSthET["date"] <=\
+                                            poesAllEleDataDFSthET["start_time"]+datetime.timedelta(\
+                                            minutes=self.delTimeCutOffNrstPass)) ].reset_index(drop=True)
+            poesAllEleDataDFSthET = poesAllEleDataDFSthET.sort_values(\
+                                        ["sat","date"], ascending=[True, True]\
+                                        ).reset_index(drop=True)
+            # We'll get the the satellite pass which is moving equatorwards
+            # Basically percent change in latitudes should be negative
+            # for a satellite moving polewards (percent change would help
+            # with the southern hemisphere lcoations.)
+            poesAllEleDataDFSthET["latRowDiffs"] = poesAllEleDataDFSthET.groupby("sat")[[\
+                            "aacgm_lat_foot" ] ].pct_change()
+            poesAllEleDataDFSthET = poesAllEleDataDFSthET[\
+                                    poesAllEleDataDFSthET["latRowDiffs"] < 0.\
+                                    ].reset_index(drop=True)
+            poesAllEleDataDFSthET = poesAllEleDataDFSthET.sort_values(\
+                                        ["sat", "aacgm_lat_foot","delCtime"],\
+                                        ascending=[True, False, True]\
+                                        ).reset_index(drop=True)
+            # get the start time
+            eTimeSthDF = poesAllEleDataDFSthET.groupby("sat").first().reset_index()
+            eTimeSthDF = eTimeSthDF[ ["sat", "date"] ]
+            eTimeSthDF.columns = [ "sat", "end_time" ] 
+            selTimeRangeSthDF = pandas.merge( selTimeRangeSthDF, eTimeSthDF, on="sat" )
+            selTimeRangeSthDF["selTime"] = ctime
+            # Merge the two time range DFs to one
+            currselTimeRangeDF = pandas.merge( selTimeRangeNthDF, selTimeRangeSthDF,\
+                             on=["sat", "selTime"], how="outer", suffixes=( '_nth', '_sth' ) )
+            outDFList.append( currselTimeRangeDF )
+        # Concat all the DFs for differnt time ranges
+        selTimeRangeDF = pandas.concat( outDFList )
+        return selTimeRangeDF
