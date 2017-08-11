@@ -26,9 +26,9 @@ class PoesData(object):
         self.delCtimeCutoff = 60. #min
         # Roughly corresponds to 1 deg in MLAT
         self.gauss_smooth_sigma = 5. 
-        diffElctrCutoffBnd = 0.1
+        self.diffElctrCutoffBnd = 0.1
         # More than an order of magnitude, remember its a log scale
-        filtEleFluxCutoffMagn = 1.25 
+        self.filtEleFluxCutoffMagn = 1.25 
 
     def get_all_sat_urls(self, dataFolder="./"):
         ctx = ssl.create_default_context()
@@ -449,9 +449,38 @@ class PoesData(object):
                         ["min_loc_index", "max_loc_index"] ].max(axis=1)
         # Now get the actual locations
         polePassEqBndDF = currPOESDFPolewards.ix[selLocPolePass["nrstInd"]]\
-                                [ ["diffEleFluxPoleArr", "aacgm_lat_foot"] ]
+                                [ ["diffEleFluxPoleArr", "aacgm_lat_foot", "sat"] ].reset_index()
         equatorPassEqBndDF = currPOESDFEquatorwards.ix[selLocEquatorPass["nrstInd"]]\
-                                [ ["diffEleFluxEquatorArr", "aacgm_lat_foot"] ]
+                                [ ["diffEleFluxEquatorArr", "aacgm_lat_foot", "sat"] ].reset_index()
+        polePassEqBndDF.columns = [ "ind_sel", "diffEleFlux_chosen", "lat_chosen", "sat" ]
+        equatorPassEqBndDF.columns = [ "ind_sel", "diffEleFlux_chosen", "lat_chosen", "sat" ]
+        # Poleward
+        # Setup filters to identify boundaries
+        polePassEqBndDF = pandas.merge( currPOESDFPolewards,\
+                             polePassEqBndDF, on="sat" )
+        equatorPassEqBndDF = pandas.merge( currPOESDFEquatorwards,\
+                             equatorPassEqBndDF, on="sat" )
+        polePassEqBndDF = polePassEqBndDF[  \
+                    abs( polePassEqBndDF["diffEleFluxPoleArr"] ) <= \
+                    abs(polePassEqBndDF["diffEleFlux_chosen"]*self.diffElctrCutoffBnd) ]
+        polePassEqBndDF = polePassEqBndDF[ \
+                            ( abs(polePassEqBndDF["aacgm_lat_foot"]) < \
+                            abs(polePassEqBndDF["lat_chosen"]) ) &\
+                             (polePassEqBndDF["filtEleFluxPoleArr"].max() -\
+                             polePassEqBndDF["filtEleFluxPoleArr"] > self.filtEleFluxCutoffMagn) ]
+        polePassEqBndDF = polePassEqBndDF[ abs(polePassEqBndDF["aacgm_lat_foot"]) ==\
+                                          max( abs(polePassEqBndDF["aacgm_lat_foot"]) ) ]
+        # Equatorward
+        equatorPassEqBndDF = equatorPassEqBndDF[  \
+                    abs( equatorPassEqBndDF["diffEleFluxEquatorArr"] ) <= \
+                    abs(equatorPassEqBndDF["diffEleFlux_chosen"]*self.diffElctrCutoffBnd) ]
+        equatorPassEqBndDF = equatorPassEqBndDF[ \
+                            ( abs(equatorPassEqBndDF["aacgm_lat_foot"]) < \
+                            abs(equatorPassEqBndDF["lat_chosen"]) ) &\
+                             (equatorPassEqBndDF["filtEleFluxEquatorArr"].max() -\
+                             equatorPassEqBndDF["filtEleFluxEquatorArr"] > self.filtEleFluxCutoffMagn) ]
+        equatorPassEqBndDF = equatorPassEqBndDF[ abs(equatorPassEqBndDF["aacgm_lat_foot"]) ==\
+                                          max( abs(equatorPassEqBndDF["aacgm_lat_foot"]) ) ]
         print polePassEqBndDF
         print equatorPassEqBndDF
 
