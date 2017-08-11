@@ -7,6 +7,7 @@ import netCDF4
 import pandas
 import datetime
 import numpy
+from scipy import signal, ndimage
 
 class PoesData(object):
     """
@@ -23,6 +24,11 @@ class PoesData(object):
         self.mlonDiffOtrEndCutoff = 50.
         self.delLatCutoff = 2.
         self.delCtimeCutoff = 60. #min
+        # Roughly corresponds to 1 deg in MLAT
+        self.gauss_smooth_sigma = 5. 
+        diffElctrCutoffBnd = 0.1
+        # More than an order of magnitude, remember its a log scale
+        filtEleFluxCutoffMagn = 1.25 
 
     def get_all_sat_urls(self, dataFolder="./"):
         ctx = ssl.create_default_context()
@@ -161,7 +167,7 @@ class PoesData(object):
     def get_closest_sat_passes( self, poesAllEleDataDF, poesAllProDataDF, timeRange,\
          timeInterval=datetime.timedelta(minutes=30) ):
         # given a timeRange, timestep
-        # get the locations of auroral boundaries
+        # get the closest 45 MLAT - 45 MLAT passes
         # for each of the satellites.
         outDFList = []
         ctime = timeRange[0]
@@ -328,3 +334,125 @@ class PoesData(object):
         # Concat all the DFs for differnt time ranges
         selTimeRangeDF = pandas.concat( outDFList )
         return selTimeRangeDF
+
+    def get_nth_ele_eq_bnd_locs( self, poesDataDF, poesAllEleDataDF ):
+        # given a dataframe, loop through times and
+        # get the locations of auroral boundaries
+        # for each of the satellites.
+        for currTime in poesDataDF["selTime"].unique():
+            # For each unique time, get the pass times
+            passTimeRange = poesDataDF[ \
+                poesDataDF["selTime"] == currTime ][ [\
+                "sat","start_time_nth","end_time_nth"] ].dropna()
+            currPOESDF = pandas.merge( poesAllEleDataDF, passTimeRange, on="sat")
+            # get data from poesSatellites
+            currPOESDF = currPOESDF[ \
+                         (currPOESDF["date"] >= currPOESDF["start_time_nth"]) &\
+                         (currPOESDF["date"] <= currPOESDF["end_time_nth"])\
+                         ].reset_index(drop=True)
+            break
+        # Divide satellite data to two passes
+        # we'll get boundary data from each pass
+        # In the first pass, sat is moving from 
+        # low to high latitudes and in the second one
+        # We'll get the opposite case
+        currPOESDF = currPOESDF.sort_values( ["sat","date"],\
+                        ascending=[True, True] \
+                        ).reset_index(drop=True)
+        # We'll get the the satellite pass which is moving polewards
+        # Basically percent change in latitudes should be positive
+        # for a satellite moving polewards.
+        currPOESDF["latRowDiffs"] = currPOESDF.groupby("sat")[[\
+                        "aacgm_lat_foot" ] ].pct_change()
+        currPOESDFPolewards = currPOESDF[\
+                                currPOESDF["latRowDiffs"] > 0.\
+                                ].reset_index(drop=True)
+        currPOESDFEquatorwards = currPOESDF[\
+                                currPOESDF["latRowDiffs"] < 0.\
+                                ].reset_index(drop=True)
+        currPOESDFPolewards["filtEleFluxPoleArr"] = ndimage.filters.gaussian_filter1d(\
+                                currPOESDFPolewards["log_ele_flux"],self.gauss_smooth_sigma) 
+        currPOESDFPolewards["diffEleFluxPoleArr"] = numpy.gradient(\
+                                numpy.gradient(currPOESDFPolewards["filtEleFluxPoleArr"]))
+        # Get laplacian of gaussian for Equatorward pass
+        currPOESDFEquatorwards["filtEleFluxEquatorArr"] = \
+                            ndimage.filters.gaussian_filter1d(\
+                            currPOESDFEquatorwards["log_ele_flux"],self.gauss_smooth_sigma) #
+        currPOESDFEquatorwards["diffEleFluxEquatorArr"] = \
+                            numpy.gradient(numpy.gradient(\
+                                currPOESDFEquatorwards["filtEleFluxEquatorArr"]))
+        # Now get the max and min indices (of 
+        # Laplacian of Gaussian of electron flux) 
+        # for poleward and equatorward passes
+        # Poleward
+        # minPolePassLoc = currPOESDFPolewards.groupby("sat")[\
+        #                     "diffEleFluxPoleArr"].min().reset_index()
+        # maxPolePassLoc = currPOESDFPolewards.groupby("sat")[\
+        #                     "diffEleFluxPoleArr"].max().reset_index()
+        # selLocPolePass = pandas.merge( minPolePassLoc, maxPolePassLoc,\
+        #                     on= "sat", suffix=("_min", "_max") )
+        # selLocPolePass["chosenLoc"] = min( selLocPolePass["diffEleFluxPoleArr_min"],\
+        #                                 selLocPolePass["diffEleFluxPoleArr_max"] )
+        # # Equatorward
+        # minEquatorPassLoc = currPOESDFEquatorwards.groupby("sat")[\
+        #                     "diffEleFluxEquatorArr"].min().reset_index()
+        # maxEquatorPassLoc = currPOESDFEquatorwards.groupby("sat")[\
+        #                     "diffEleFluxEquatorArr"].max().reset_index()
+        # selLocEquatorPass = pandas.merge( minEquatorPassLoc, maxEquatorPassLoc,\
+        #                          on= "sat", suffix=("_min", "_max") )
+        # selLocEquatorPass["chosenLoc"] = max( selLocEquatorPass["diffEleFluxEquatorArr_min"],\
+        #                                 selLocEquatorPass["diffEleFluxEquatorArr_max"] )
+        # Now we calculate the equatorward boundary currently
+        # We'll only choose the sharpest edge (could be poleward
+        # or equatorward edge). For the equatorward boundary, we 
+        # can simply get the nearest (in lat) point where 
+        # diffEleFluxPoleArr is 10% or less in magnitude.
+
+
+        # get indices of min location Poleward pass
+        minLocs = currPOESDFPolewards.groupby(['sat'])\
+                            ['diffEleFluxPoleArr'].transform(min) ==\
+                             currPOESDFPolewards['diffEleFluxPoleArr']
+        minPolePassLoc = currPOESDFPolewards[ minLocs ]
+        minPolePassLoc = minPolePassLoc[ ["sat"] ]
+        minPolePassLoc = minPolePassLoc.reset_index()
+        minPolePassLoc.columns = [ "min_loc_index", "sat" ]
+        # get indices of max location Poleward pass
+        maxLocs = currPOESDFPolewards.groupby(['sat'])\
+                            ['diffEleFluxPoleArr'].transform(max) ==\
+                             currPOESDFPolewards['diffEleFluxPoleArr']
+        maxPolePassLoc = currPOESDFPolewards[ maxLocs ]
+        maxPolePassLoc = maxPolePassLoc[ ["sat"] ]
+        maxPolePassLoc = maxPolePassLoc.reset_index()
+        maxPolePassLoc.columns = [ "max_loc_index", "sat" ]
+        selLocPolePass = pandas.merge( minPolePassLoc, maxPolePassLoc, on="sat" )
+        selLocPolePass["nrstInd"] = selLocPolePass[ \
+                        ["min_loc_index", "max_loc_index"] ].min(axis=1)
+        # get indices of min location Equatorward pass
+        minLocs = currPOESDFEquatorwards.groupby(['sat'])\
+                            ['diffEleFluxEquatorArr'].transform(min) ==\
+                             currPOESDFEquatorwards['diffEleFluxEquatorArr']
+        minEquatorPassLoc = currPOESDFEquatorwards[ minLocs ]
+        minEquatorPassLoc = minEquatorPassLoc[ ["sat"] ]
+        minEquatorPassLoc = minEquatorPassLoc.reset_index()
+        minEquatorPassLoc.columns = [ "min_loc_index", "sat" ]
+        # get indices of max location Equatorward pass
+        maxLocs = currPOESDFEquatorwards.groupby(['sat'])\
+                            ['diffEleFluxEquatorArr'].transform(max) ==\
+                             currPOESDFEquatorwards['diffEleFluxEquatorArr']
+        maxEquatorPassLoc = currPOESDFEquatorwards[ maxLocs ]
+        maxEquatorPassLoc = maxEquatorPassLoc[ ["sat"] ]
+        maxEquatorPassLoc = maxEquatorPassLoc.reset_index()
+        maxEquatorPassLoc.columns = [ "max_loc_index", "sat" ]
+        selLocEquatorPass = pandas.merge( minEquatorPassLoc, maxEquatorPassLoc, on="sat" )
+        selLocEquatorPass["nrstInd"] = selLocEquatorPass[ \
+                        ["min_loc_index", "max_loc_index"] ].max(axis=1)
+        # Now get the actual locations
+        polePassEqBndDF = currPOESDFPolewards.ix[selLocPolePass["nrstInd"]]\
+                                [ ["diffEleFluxPoleArr", "aacgm_lat_foot"] ]
+        equatorPassEqBndDF = currPOESDFEquatorwards.ix[selLocEquatorPass["nrstInd"]]\
+                                [ ["diffEleFluxEquatorArr", "aacgm_lat_foot"] ]
+        print polePassEqBndDF
+        print equatorPassEqBndDF
+
+
