@@ -530,6 +530,9 @@ class PoesData(object):
                 # Concat the arrays together
                 latPoesAll = numpy.append( poleMlatArr, equMlatArr )
                 lonPoesAll = numpy.append( poleMlonArr, equMlonArr )
+                # Drop na's again
+                lonPoesAll = lonPoesAll[~numpy.isnan(lonPoesAll)]
+                latPoesAll = latPoesAll[~numpy.isnan(lonPoesAll)]
                 # Now we do the fitting part...
                 # Target function
                 fitfunc = lambda p, x: p[0] + \
