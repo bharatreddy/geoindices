@@ -16,4 +16,5 @@ if __name__ == "__main__":
     timeRange = [ poesAllEleDataDF["date"].min(), poesAllEleDataDF["date"].max() ]
     aurPassDF = poesObj.get_closest_sat_passes( poesAllEleDataDF, poesAllProDataDF, timeRange )
     eqBndLocsDF = poesObj.get_nth_ele_eq_bnd_locs( aurPassDF, poesAllEleDataDF )
-    print eqBndLocsDF
+    fitBndDF = poesObj.fit_circle_aurbnd( eqBndLocsDF )
+    print fitBndDF

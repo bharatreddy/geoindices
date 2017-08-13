@@ -7,7 +7,8 @@ import netCDF4
 import pandas
 import datetime
 import numpy
-from scipy import signal, ndimage
+import math
+from scipy import signal, ndimage, optimize
 
 class PoesData(object):
     """
@@ -488,4 +489,62 @@ class PoesData(object):
         aurEqBndDF = pandas.concat( aurEqBndList )
         return aurEqBndDF
 
-
+    def fit_circle_aurbnd( self, bndLocDF ):
+        # Given the boundary locations obtained
+        # from different satellites, estimate the
+        # auroral oval boundary by fitting a circle!
+        for currTime in bndLocDF["time"].unique():
+            currBndDF = bndLocDF[ bndLocDF["time"] == currTime ]
+            # Convert to numpy arrays 
+            poleMlatArr = currBndDF["pole_mlat"].values
+            poleMlonArr = currBndDF["pole_mlon"].values
+            poleMltArr = currBndDF["pole_mlt"].values
+            equMlatArr = currBndDF["equator_mlat"].values
+            equMlonArr = currBndDF["equator_mlon"].values
+            equMltArr = currBndDF["equator_mlt"].values
+            # discard nan values
+            poleMlatArr = poleMlatArr[~numpy.isnan(poleMlatArr)]
+            poleMlonArr = poleMlonArr[~numpy.isnan(poleMlatArr)]
+            poleMltArr = poleMltArr[~numpy.isnan(poleMlatArr)]
+            equMlatArr = equMlatArr[~numpy.isnan(equMlatArr)]
+            equMlonArr = equMlonArr[~numpy.isnan(equMlatArr)]
+            equMltArr = equMltArr[~numpy.isnan(equMlatArr)]
+            # Concat the arrays together
+            latPoesAll = numpy.append( poleMlatArr, equMlatArr )
+            lonPoesAll = numpy.append( poleMlonArr, equMlonArr )
+            # Now we do the fitting part...
+            # Target function
+            fitfunc = lambda p, x: p[0] + \
+                        p[1]*numpy.cos(\
+                        2*math.pi*(x/360.)+p[2]) 
+            # Distance to the target function
+            errfunc = lambda p, x,\
+                         y: fitfunc(p, x) - y 
+            # get the fitting results
+            # Initial guess
+            p0Equ = [ 1., 1., 1.]
+            p1Equ, successEqu = optimize.leastsq(errfunc,\
+                         p0Equ[:], args=(lonPoesAll, latPoesAll))
+            eqPlotLons = numpy.linspace(0., 360., 25.)
+            eqPlotLons[-1] = 0.
+            eqBndLocs = []
+            for xx in eqPlotLons :
+                currLatEst = p1Equ[0] +\
+                        p1Equ[1]*numpy.cos(2*math.pi*(xx/360.)+p1Equ[2] )
+                eqBndLocs.append( ( round(currLatEst,1), xx ) )
+            # Convert to DF
+            aurFitDF = pandas.DataFrame( eqBndLocs, \
+                        columns=["MLAT", "MLON"] )
+            cnvrtTime = pandas.to_datetime(str(currTime)) 
+            aurFitDF["date"] = cnvrtTime.strftime( "%Y%m%d" )
+            aurFitDF["time"] = cnvrtTime.strftime( "%H%M" )
+            outFitResFil = "../poes-fit-" +\
+                    cnvrtTime.strftime( "%Y%m%d" ) + ".txt"
+            if cnvrtTime.strftime( "%H%M" ) == "0000":
+                with open(outFitResFil, 'w') as fra:
+                    aurFitDF.to_csv(fra, header=False,\
+                                      index=False, sep=' ' )
+            else:
+                with open(outFitResFil, 'a') as fra:
+                    aurFitDF.to_csv(fra, header=False,\
+                                      index=False, sep=' ' )
