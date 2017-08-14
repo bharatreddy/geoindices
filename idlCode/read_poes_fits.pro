@@ -12,7 +12,7 @@ if keyword_set(old) and keyword_set(new) then begin
     return, fltarr(25,2)*0.
 endif
 
-if ~keyword_set(old) or ~keyword_set(new) then begin
+if ~keyword_set(old) and ~keyword_set(new) then begin
     if (year lt 2014) then begin
         old=1
     endif else begin
@@ -80,6 +80,12 @@ close,1
 
 
 poesMagnCoords = poesMagnCoords[0:nv-1,*] 
+
+jindsChkGoodFit = where( poesMagnCoords[*,0]  gt 75. )
+if n_elements(jindsChkGoodFit) ge 15 then begin
+    print, "fit results are not good! Choose another time"
+    return, fltarr(25,2)*0.
+endif
 
 return, poesMagnCoords
 
