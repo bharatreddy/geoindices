@@ -86,11 +86,12 @@ openw,1,fname_vels
 			Final_SAPS_Lats = saps_Lats_this_mlt
 			Final_SAPS_Mlts = saps_Mlts_this_mlt
 			Final_SAPS_Vels = saps_Vels_this_mlt
+			Final_SAPS_Azims = saps_Azims_this_mlt
 			
 			for fsp = 0, n_elements(Final_SAPS_Lats)-1 do begin
 				print, "SAPS --> lats, mlt, vel, eprlat", date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp]
-				printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], $
-                                                            format = '(I8, I5, 3f11.4)'
+				printf,1, date_curr, time_curr, Final_SAPS_Lats[fsp], Final_SAPS_Mlts[fsp], Final_SAPS_Vels[fsp], Final_SAPS_Azims[fsp], $
+                                                            format = '(I8, I5, 4f11.4)'
 			endfor
 			
 		
